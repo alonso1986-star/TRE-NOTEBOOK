@@ -1,0 +1,15 @@
+{
+  "name": "TRE Sim Notebook",
+  "short_name": "TRE Notes",
+  "description": "B737 RST 3 OPC and RST 4 LPC session notes with photo evidence and PDF export.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#EDF0F3",
+  "theme_color": "#14202D",
+  "icons": [
+    {"src": "icon-192.png", "sizes": "192x192", "type": "image/png"},
+    {"src": "icon-512.png", "sizes": "512x512", "type": "image/png"},
+    {"src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"}
+  ]
+}

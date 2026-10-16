@@ -1,0 +1,825 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="TRE Notes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#FFFFFF" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#151F29" media="(prefers-color-scheme: dark)">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="apple-touch-icon" href="./apple-touch-icon.png">
+<link rel="icon" type="image/png" href="./icon-192.png">
+<style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>TRE Sim Notebook</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=IBM+Plex+Mono:wght@500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: cockpit-style checklist — sticky header + code strip, sidebar of template sections on iPad, chips on iPhone; one section at a time. */
+:root{
+  --bg:#EDF0F3; --surface:#FFFFFF; --surface-2:#F5F7F9; --ink:#14202D; --muted:#5B6976; --line:#D3DAE1;
+  --accent:#1C5A9C; --accent-ink:#FFFFFF; --accent-soft:#E0EBF7;
+  --amber:#A76300; --amber-soft:#FBEED6; --pf:#1B7451; --pf-soft:#DDF2E8; --bad:#B3261E; --bad-soft:#FBE3E1;
+  --f-display:"Barlow Condensed","Arial Narrow",system-ui,sans-serif;
+  --f-body:"IBM Plex Sans",-apple-system,system-ui,"Segoe UI",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+  --r:10px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0D141B; --surface:#151F29; --surface-2:#1A2632; --ink:#E5ECF2; --muted:#92A2B1; --line:#283745;
+  --accent:#73AAE6; --accent-ink:#0D141B; --accent-soft:#1B2F45;
+  --amber:#EFB04D; --amber-soft:#3A2B12; --pf:#5DC79B; --pf-soft:#163428; --bad:#FF8B80; --bad-soft:#3B1A18; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0D141B; --surface:#151F29; --surface-2:#1A2632; --ink:#E5ECF2; --muted:#92A2B1; --line:#283745;
+  --accent:#73AAE6; --accent-ink:#0D141B; --accent-soft:#1B2F45;
+  --amber:#EFB04D; --amber-soft:#3A2B12; --pf:#5DC79B; --pf-soft:#163428; --bad:#FF8B80; --bad-soft:#3B1A18; color-scheme:dark}
+
+html,body{background:var(--bg);color:var(--ink)}
+body{font-family:var(--f-body);font-size:15px;line-height:1.45;-webkit-text-size-adjust:100%}
+*{box-sizing:border-box}
+button,input,textarea,select{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.wrap{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1,h2,h3{font-family:var(--f-display);font-weight:700;letter-spacing:.01em;text-wrap:balance;margin:0}
+.lbl{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.mono{font-family:var(--f-mono)}
+.muted{color:var(--muted)}
+
+/* buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:40px;padding:0 14px;border-radius:8px;border:1px solid var(--line);background:var(--surface);font-weight:600;font-size:14px}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btn.ghost{background:transparent;border-color:transparent;color:var(--accent)}
+.btn.danger{color:var(--bad);border-color:var(--bad)}
+.btn.small{min-height:32px;padding:0 10px;font-size:13px}
+.btn:disabled{opacity:.5;cursor:default}
+
+/* header */
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--surface)}
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--surface);border-bottom:1px solid var(--line)}
+.top-row{display:flex;align-items:center;gap:10px;min-height:56px;padding-block:6px}
+.top-title{flex:1;min-width:0}
+.top-title h1{font-size:22px;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.top-title .sub{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.save{font-size:12px;color:var(--muted);white-space:nowrap}
+.save.ok::before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--pf);margin-right:6px;vertical-align:1px}
+.save.err{color:var(--bad)}
+@media (max-width:600px){.save{font-size:0}.save.ok::before{margin-right:0}.save.err::before{content:"!";font-size:14px;font-weight:700}}
+
+/* code strip */
+.codes{display:flex;gap:6px;overflow-x:auto;padding-block:8px;border-top:1px solid var(--line);scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.codes::-webkit-scrollbar{display:none}
+.chip{flex:none;font-family:var(--f-mono);font-size:13px;min-height:34px;min-width:38px;padding:0 10px;border-radius:7px;border:1px solid var(--line);background:var(--surface-2)}
+.chip.tag{color:var(--accent);background:var(--accent-soft);border-color:transparent}
+.chip.flag{color:var(--amber);background:var(--amber-soft);border-color:transparent}
+.codes .sep{flex:none;width:1px;background:var(--line);margin:4px 2px}
+
+/* layout */
+.shell{display:grid;grid-template-columns:1fr;gap:16px;padding-block:16px 48px;max-width:1240px;margin:0 auto}
+@media (min-width:900px){.shell{grid-template-columns:230px minmax(0,1fr);align-items:start}}
+.nav{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin-inline:-4px;padding:2px 4px}
+.nav::-webkit-scrollbar{display:none}
+@media (min-width:900px){.nav{flex-direction:column;overflow:visible;position:sticky;top:calc(env(safe-area-inset-top,0px) + 120px)}}
+.nav button{flex:none;text-align:left;border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:8px 12px;display:flex;justify-content:space-between;gap:10px;align-items:center;font-size:14px;font-weight:500}
+.nav button[aria-current="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.nav .cnt{font-family:var(--f-mono);font-size:11px;opacity:.75}
+main{min-width:0;display:flex;flex-direction:column;gap:14px}
+.sec-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 14px}
+.sec-head h2{font-size:28px}
+.sec-head .sub{color:var(--muted);font-size:13px}
+
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px}
+.card h3{font-size:19px}
+.grid{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+.field{display:flex;flex-direction:column;gap:4px;min-width:0}
+.field input,.field textarea,.pilot textarea,.pilot input,.obs{width:100%;border:1px solid var(--line);background:var(--surface-2);border-radius:7px;padding:9px 10px;font-size:16px}
+textarea{resize:vertical;min-height:84px;line-height:1.45}
+textarea.obs{min-height:60px}
+input[type=date]{min-height:42px}
+.field select{width:100%;border:1px solid var(--line);background:var(--surface-2);border-radius:7px;padding:9px 10px;font-size:16px;min-height:42px}
+.pair{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.pair>input,.pair>select{flex:1 1 140px;min-width:0}
+.pair .updt{display:flex;align-items:center;gap:6px;flex:none}
+
+/* segmented */
+.seg{display:inline-flex;flex-wrap:wrap;gap:4px}
+.seg button{min-height:36px;min-width:40px;padding:0 10px;border:1px solid var(--line);background:var(--surface-2);border-radius:7px;font-size:14px;font-weight:600}
+.seg button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.seg.role button[data-val="PF"][aria-pressed="true"]{background:var(--pf);border-color:var(--pf);color:var(--accent-ink)}
+.seg.role button[data-val="PM"][aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+.seg.grade button[aria-pressed="true"][data-val="5"],.seg.grade button[aria-pressed="true"][data-val="F"],.seg button[aria-pressed="true"][data-val="FAIL"]{background:var(--bad);border-color:var(--bad)}
+.seg button:disabled{opacity:.35}
+
+/* exercise card */
+.ex{display:flex;flex-direction:column;gap:12px}
+.ex-head{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:baseline}
+.ex-code{font-family:var(--f-mono);font-size:13px;color:var(--accent);background:var(--accent-soft);padding:2px 7px;border-radius:5px}
+.ex-name{font-family:var(--f-display);font-size:21px;font-weight:700;line-height:1.15}
+.ex-meta{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:13px}
+.ref{font-family:var(--f-mono);font-size:12px;border:1px solid var(--line);border-radius:5px;padding:1px 6px;color:var(--muted)}
+.cond{color:var(--ink);font-weight:500}
+.guide{font-size:13px;color:var(--muted);font-style:italic;max-width:75ch}
+.ex.has-notes{border-left:3px solid var(--pf)}
+.pilots{display:grid;gap:12px;grid-template-columns:1fr}
+@media (min-width:700px){.pilots{grid-template-columns:1fr 1fr}}
+.pilot{display:flex;flex-direction:column;gap:8px;min-width:0;background:var(--surface-2);border-radius:8px;padding:10px}
+.pilot textarea,.pilot input{background:var(--surface)}
+.pilot-top{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.who{font-weight:600;font-size:14px;min-width:0;overflow:hidden;text-overflow:ellipsis}
+.who b{font-family:var(--f-mono);font-size:12px;color:var(--muted);margin-right:6px;font-weight:500}
+.comp-row{display:flex;align-items:center;gap:8px}
+.comp-row .lbl{flex:none}
+.photos{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.thumb{width:72px;height:72px;border-radius:7px;overflow:hidden;border:1px solid var(--line);padding:0;background:var(--surface-2)}
+.thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.addphoto{position:relative;overflow:hidden}
+.addphoto input{position:absolute;inset:0;opacity:0;cursor:pointer}
+
+/* summary */
+.gtable{display:flex;flex-direction:column}
+.grow{display:grid;grid-template-columns:minmax(150px,.8fr) minmax(0,2fr) minmax(0,2fr);gap:14px;align-items:start;padding-block:12px;border-bottom:1px solid var(--line)}
+.pcell{display:flex;flex-direction:column;gap:6px;min-width:0}
+.pcell .ph{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.grow:last-child{border-bottom:0}
+.grow .cname b{font-family:var(--f-mono);font-size:13px;display:block}
+.grow .cname span{font-size:12px;color:var(--muted)}
+.grow .pcol{display:flex;flex-direction:column;gap:3px}
+.ghead{font-size:11px}
+@media (max-width:760px){.grow{grid-template-columns:1fr}}
+.kv{display:grid;grid-template-columns:150px 1fr 1fr;gap:10px;align-items:start;padding-block:10px;border-bottom:1px solid var(--line)}
+.kv:last-child{border-bottom:0}
+@media (max-width:640px){.kv{grid-template-columns:1fr}}
+.check{display:flex;gap:10px;align-items:flex-start;padding-block:8px;font-size:15px}
+.check input{width:20px;height:20px;margin-top:1px;accent-color:var(--accent);flex:none}
+
+/* home */
+.home{max-width:900px;margin:0 auto;padding-block:20px 48px;display:flex;flex-direction:column;gap:18px}
+.hero{display:flex;flex-direction:column;gap:6px}
+.hero h1{font-size:40px;line-height:1}
+.newrow{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
+.newbtn{text-align:left;border:1px solid var(--line);background:var(--surface);border-radius:var(--r);padding:16px;display:flex;flex-direction:column;gap:4px}
+.newbtn .t{font-family:var(--f-display);font-size:24px;font-weight:700}
+.newbtn .d{font-size:13px;color:var(--muted)}
+.newbtn .plus{font-family:var(--f-mono);color:var(--accent);font-size:13px}
+.slist{display:flex;flex-direction:column;gap:8px}
+.srow{display:flex;gap:12px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:12px 14px}
+.srow .open{flex:1;min-width:0;text-align:left;background:none;border:0;padding:0;display:flex;flex-direction:column;gap:2px}
+.badge{display:inline-block;font-family:var(--f-mono);font-size:11px;padding:2px 6px;border-radius:4px;background:var(--accent-soft);color:var(--accent);margin-right:6px}
+.srow .names{font-size:13px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.empty{border:1px dashed var(--line);border-radius:var(--r);padding:22px;color:var(--muted);text-align:center}
+.foot{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+
+/* setup tables */
+.tscroll{overflow-x:auto}
+table.setup{border-collapse:collapse;width:100%;min-width:560px;font-size:13px}
+table.setup th,table.setup td{border-bottom:1px solid var(--line);padding:7px 8px;text-align:left;vertical-align:top}
+table.setup th{font-family:var(--f-mono);font-weight:500;color:var(--muted);white-space:nowrap}
+table.setup td.on{background:var(--accent-soft)}
+
+/* export */
+.issues{display:flex;flex-direction:column;gap:6px;margin:0;padding:0;list-style:none}
+.issues li{font-size:14px;padding:8px 10px;border-radius:7px;background:var(--amber-soft);color:var(--ink)}
+.issues li.ok{background:var(--pf-soft)}
+.steps{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:4px;font-size:14px}
+.banner{padding:10px 12px;border-radius:8px;background:var(--amber-soft);font-size:14px}
+.banner.bad{background:var(--bad-soft)}
+
+/* lightbox */
+.lb{position:fixed;inset:0;z-index:20;background:rgba(5,10,15,.82);display:flex;align-items:center;justify-content:center;padding:max(16px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) max(16px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+.lb-box{background:var(--surface);border-radius:12px;max-width:760px;width:100%;max-height:100%;overflow:auto;display:flex;flex-direction:column;gap:10px;padding:12px}
+.lb-box img{width:100%;max-height:60vh;object-fit:contain;border-radius:8px;background:var(--surface-2)}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:9px;font-size:14px;z-index:30;max-width:calc(100% - 32px)}
+@media (prefers-reduced-motion:no-preference){.toast{animation:up .2s ease-out}@keyframes up{from{transform:translate(-50%,8px);opacity:0}}}
+</style>
+</head>
+<body>
+
+
+<div id="app"></div>
+<input type="file" id="importFile" accept="application/json,.json" hidden>
+
+<script src="./jspdf.umd.min.js"></script>
+<script src="./jspdf.plugin.autotable.min.js"></script>
+<script>
+"use strict";
+/* ---------------- Template data (from the user's RST 3 / RST 4 .docx templates) ---------------- */
+const COMPS=[["AOP","Application of Procedures"],["KNO","Knowledge"],["FPM-A","Flight Path Mgmt Auto"],["FPM-M","Flight Path Mgmt Manual"],["COM","Communication"],["L&T","Leadership & Teamwork"],["PSDM","Problem Solving & DM"],["SA","Situation Awareness"],["WLM","Workload Management"]];
+const CODES=["+","-","P","D","STD","N/O","-> rec","-> no rec"];
+const FLAGS=["REP","FREEZE"];
+const TAGS=["AOP","K","FPM-A","FPM-M","COM","L&T","PSDM","SA","WLM"];
+const PILOT_BLANK={name:"",crewcode:"",license:"",trir:"",trirUpdt:"",medical:"",medicalUpdt:"",passport:"",passportExp:"",techExam:"",elp:"",elpUpdt:"",attempt:"",outcome:"",failed:""};
+
+const T={
+ LPC:{key:"LPC",short:"RST 4 LPC",name:"RST 4 LPC",session:"RST 4 LPC",crew:false,
+  sections:[
+   {id:"h1",nav:"1st half",title:"First half",sub:"FO = PF / CPT = PM (adapt if different)",def:{cpt:"PM",fo:"PF"},items:[
+    {id:"L1",name:"LOFT - INITIAL",refs:["1.4","1.6","SPA.LVO","3.4.7"],note:"Initial set-up, briefing, LVO items. Note PF/PM, CRM, SOP adherence."},
+    {id:"L2",name:"LOFT - SCENARIO",refs:[],note:"Scenario events, NITS/PIOSEE, decisions. Note malfunction ID, handling, comms."},
+    {id:"L3",name:"LOFT - APPROACH",refs:["3.8.1","6.2","6.3","6.4"],note:"Approach & landing. G/A at DH(A) +50/-0 ft. Circling: lateral manoeuvring by 300 ft AAL."},
+    {id:"L4",name:"FO M.S. - W/S",refs:["3.4.2","3.4.5","3.6.5","SPA.LVO"],note:"Windshear recovery. Note trigger, recovery, PM calls."},
+    {id:"L5",name:"FO M.S. - ENG",refs:["2.5.2","3.8.3.4","4.4","5.5"],note:"Eng failure: hdg +/-10 deg, speed +10/-5 kt. G/A at DH(A) +50/-0 ft."},
+    {id:"L6",name:"FO M.S. - 2D",refs:["3.6.7","3.8.4"],note:"Non-precision / 2D approach. Note stabilisation, MDA."},
+    {id:"L7",name:"FO M.S. - RTO",refs:["6.1"],note:"RTO: decision, execution, comms, evac decision."}]},
+   {id:"h2",nav:"2nd half",title:"Second half",sub:"CPT = PF / FO = PM (adapt if different)",def:{cpt:"PF",fo:"PM"},repeats:true,items:[
+    {id:"L8",name:"LOFT - INITIAL",refs:["2.5.2","SPA.LVO"]},
+    {id:"L9",name:"LOFT - SCENARIO",refs:[]},
+    {id:"L10",name:"LOFT - APPROACH",refs:["3.8.3.4","4.4","5.5"]},
+    {id:"L11",name:"CAPT M.S. - W/S",refs:["3.4.12","3.6.5"]},
+    {id:"L12",name:"CAPT M.S. - 2D",refs:["3.6.1","3.8.4"]},
+    {id:"L13",name:"CAPT M.S. - EVAC",refs:["3.6.8"]},
+    {id:"L14",name:"CAPT RHS - LVO RHS",refs:["6.2","6.3","6.4"],note:"CAT II/III G/A (A/P failure). FEG 10.7.2: every 18 mo (OPC of RST 1, 3, 5). Note trim, G/A at DH, landing."},
+    {id:"L15",name:"CAPT RHS - ENG RHS",refs:["2.5.2","3.8.3.4","4.4","5.5"],note:"EFATO at V1, S/E ILS, G/A and land. Failed RHS handled per FEG 5.8.11."},
+    {id:"L16",name:"RAW DATA ILS OPT",refs:["3.8.3.1"],note:"Optional: ATPL / 3rd country. +/- 1/2 scale."}]}
+  ],
+  repeatsNote:"Once, at end, after RHS (FEG 5.8.10). Record in EFOS.",
+  summary:"LPC",
+  admin:["EFOS completed and signed","Debrief done: Result / Reason / Restrictions / Retraining / Retest (FEG 5.10.2)","Partial Pass / Fail: notify Crew Control and CI-SIM","Notes sent to standardsinstructors","ELA issued if not ELP 6","3 T/O and landings FCL.060 (if applicable)","FO: Command Assessment after first line check"],
+  },
+ OPC:{key:"OPC",short:"RST 3 OPC + TRNG",name:"RST 3 OPC & Training",session:"RST 3 OPC & TRNG",crew:true,timing:"OPC 2:55 | Training LOFT/LOS 1:45",
+  sections:[
+   {id:"o1",nav:"OPC · 1st half",title:"OPC - First half",sub:"FO = PF (adapt if different) · OPC | night scene | EIDW - EGCC",def:{cpt:"PM",fo:"PF"},items:[
+    {id:"F1",code:"F1",name:"T/O 28L",pf:"FO",cond:"LVO T/O 125 m",refs:["SPA.LVO"],note:"FO low visibility take-off, part of the LVO sequence."},
+    {id:"F2",code:"F2",name:"CAT III 28L F40 - G/A",pf:"FO",cond:"RVR 0/0",refs:["6.2","6.3"],note:"CAT III pre-set wx. A/P fail below DH after CPT takes control; set RVR/cloud 0/0 at once. Random order: land first or G/A first. G/A at DH +50/-0 ft. Touchdown in G/A not a fail unless tailstrike or unsafe."},
+    {id:"F3",code:"F3",name:"CAT III 28L F30 - LAND",pf:"FO",cond:"175 m",refs:["6.2","6.4"],note:"One approach F40 and one F30. Landing with visual reference at DH. A/P fail only (no other failure)."},
+    {id:"F4",code:"F4",name:"RNP34 - CTL16",pf:"FO",cond:"Reposition RW34",refs:["3.8.3","3.8.5"],note:"190/15 8000 OVC013. RNP to circling minima, circle to a runway 90 deg or more off. Lateral manoeuvring by 300 ft AAL. Stabilised at landing gate."},
+    {id:"F5",code:"F5",name:"LOC 28L V/S - LAND",pf:"FO",cond:"RNP or LOC only",refs:["3.8.4"],note:"Examiner discretion RNP/LOC only. Config at 5 nm or earlier is acceptable. Cross-check altitude vs distance. MDA procedure."},
+    {id:"F6",code:"F6",name:"T/O 28L - EFATO",pf:"FO",cond:"Eng fail at V1",refs:["2.5.2"],note:"QRH and decision making; in-flight start NNC not required. Hdg +/-10 deg, speed +10/-5 kt. FL90 stop alt."},
+    {id:"F7",code:"F7",name:"CAT I 28L S/E - G/A",pf:"FO",cond:"0/0 G/A",refs:["3.8.3.4","4.4"],note:"Single engine ILS manually flown; LOC and G/S manually intercepted. G/A at DH(A) +50/-0 ft."},
+    {id:"F8",code:"F8",name:"CAT I 28L S/E - LAND",pf:"FO",cond:"3000 m OVC004",refs:["5.5"]},
+    {id:"F9",code:"F9",name:"RTO - EVAC",pf:"FO",cond:"Below V1",refs:["6.1"],note:"RTO due fire and failure below V1, RVR 125 m. Memory items for both seats; pilot incapacitation may warrant single pilot RTO. Evac decision and comms."}]},
+   {id:"o2",nav:"OPC · 2nd half",title:"OPC - Second half",sub:"CPT = PF (adapt if different) · no RHS check required",def:{cpt:"PF",fo:"PM"},repeats:true,items:[
+    {id:"C1",code:"C1",name:"T/O 28L",pf:"CPT",cond:"LVO T/O 125 m",refs:["SPA.LVO"],note:"CPT low visibility take-off."},
+    {id:"C2",code:"C2",name:"RNP34 - CTL16",pf:"CPT",cond:"Reposition RW34",refs:["3.8.3","3.8.5"],note:"Circle to a runway 90 deg or more off; lateral manoeuvring by 300 ft AAL."},
+    {id:"C3",code:"C3",name:"LOC 28L V/S - LAND",pf:"CPT",cond:"RNP or LOC only",refs:["3.8.4"],note:"V/S technique; cross-check altitude vs distance; MDA procedure."},
+    {id:"C4",code:"C4",name:"T/O 28L - EFATO",pf:"CPT",cond:"Eng fire / severe dmg at V1",refs:["2.5.2"],note:"Engine Fire and Severe Damage at V1. Hdg +/-10 deg, speed +10/-5 kt. Examiner reconfigures once at safe height."},
+    {id:"C5",code:"C5",name:"CAT I 28L S/E - G/A",pf:"CPT",cond:"0/0 G/A",refs:["3.8.3.4","4.4"],note:"Single engine ILS manually flown; LOC and G/S manually intercepted. G/A at DH(A) +50/-0 ft."},
+    {id:"C6",code:"C6",name:"CAT I 28L S/E - LAND",pf:"CPT",cond:"3000 m OVC004",refs:["5.5"]}]},
+   {id:"t1",nav:"Training · GO/NO GO",title:"Training - GO / NO GO",sub:"Instructor Notes Rev 4 · Fuel freeze ON · vary the order (surprise/startle) · not a direct RTO training",def:{},items:[
+    {id:"T1",code:"T1",name:"NO V SPEEDS",pf:"CPT/FO",refs:["KNO","AOP"],note:"Delete V speeds (26K-24K-26K). Take-off continues; PM calls V1/VR. If missing before T/O roll: stop and set FMC perf. FCTM 3.27."},
+    {id:"T2",code:"T2",name:"NO GO - CARGO FIRE",pf:"CPT or FO",cond:"110 kt",refs:["PSDM","COM","L&T"],note:"High-speed RTO. NNC, MAYDAY, liaise cabin/ATC/fire brigade. Evac decision if not extinguishable."},
+    {id:"T3",code:"T3",name:"NO GO - LOW OIL PRESS",pf:"CPT",cond:"< 80 kt",refs:["PSDM","COM","KNO"],note:"Reject, identify failure, secure engine, liaise ATC. Single-engine taxi clear of runway (gale, approx. 62 t)."},
+    {id:"T4",code:"T4",name:"NO GO - ENG SURGE",pf:"FO",cond:"< 80 kt",refs:["COM","PSDM","KNO"],note:"Reject; Engine Limit/Surge/Stall memory items. Cabin reports flames: confirm no fire, close the loop."},
+    {id:"T5",code:"T5",name:"GO - LOSS SYS A",pf:"CPT",cond:"HYD ML 80 kt - V1",refs:["AOP","KNO","PSDM"],note:"Continue. No gear retraction or CMD A; PM confirms CMD on FMA. Complete when QRH called. Gear-down fuel burn."},
+    {id:"T6",code:"T6",name:"GO - TYRE BURST",pf:"CPT or FO",cond:"110 kt",refs:["KNO","PSDM"],note:"Check engine indications: continue. Complete when A/P engaged."},
+    {id:"T7",code:"T7",name:"GO - DOOR LIGHT (aft entry)",pf:"FO",cond:"95 kt | fuel freeze OFF",refs:["AOP","COM","WLM"],note:"Continue; state malfunction at 400 AGL, no memory items; NNC; Number One PA. Leads into LOFT."},
+    {id:"T8",code:"T8",name:"Optional GO / NO GO",pf:"as per card",refs:[],note:"222 call, door light (NO GO), FADEC failure, PFD failure, eng ovht, transfer bus off. If time permits or to improve competence."}]},
+   {id:"t2",nav:"Training · LOFT/LOS/FPM",title:"Training - LOFT / LOS / FPM",sub:"Instructor Notes Rev 4 · LOFT/LOS time 1:45 · weak areas: root cause and train to competence",def:{},items:[
+    {id:"T9",code:"T9",name:"LOFT - ENG HIGH OIL Tº",pf:"FO",cond:"After DOOR NNC",refs:["PSDM","SA","FPM-M","L&T","WLM"],note:"QRH Eng High Oil Temp > Eng Failure/Shutdown; rudder when closing thrust lever; A/P may disengage. Plan to land at nearest suitable. Use FMC ENG OUT CLB. Weather options MAN, EMA, STN; fuel predictions."},
+    {id:"T10",code:"T10",name:"LOS - HYD B SYS FAIL",pf:"CPT",cond:"F15 T/O | max X-wind",refs:["FPM-M","KNO","AOP"],note:"Increased thrust, delayed rotation (PM calls Vr, PF rotates at perf-limited Vr), 2-2.5 deg/s, no excessive aileron. HYD ML before V1: continue; flaps cannot retract. QRH Loss of Sys B; alternate flap retraction."},
+    {id:"T11",code:"T11",name:"FPM-A - A/T FAIL",pf:"CPT/FO",refs:["FPM-A","SA"],note:"Expedited descent; A/T failure at level-off alert. Monitor FMA, manual thrust."},
+    {id:"T12",code:"T12",name:"FPM-M - RAW DATA T/O",pf:"CPT/FO",refs:["FPM-M"],note:"Climb to 1500, right turn HDG 260 to 3000 ft; correct pitch and thrust, no level-off bust."},
+    {id:"T13",code:"T13",name:"FPM-M - RAW DATA ILS",pf:"CPT/FO",cond:"RW10L F30",refs:["FPM-M"],note:"Radar vectors > 10 nm from 3000 ft. Low drag, target pitch/thrust, scan. Wind 180/20."},
+    {id:"T14",code:"T14",name:"REJECTED LDG",pf:"CPT/FO",cond:"G/A at 30 ft RA",refs:["FPM-M","AOP"],note:"Exercise complete at 1000 ft AAL."},
+    {id:"T15",code:"T15",name:"CROSSWIND LDG",pf:"FO then CPT",cond:"3 nm",refs:["FPM-M"],note:"Wind 180/20, then 180/33 for CPT. Repeat T/O and landing to build confidence."},
+    {id:"T16",code:"T16",name:"TAXI-IN & SHUTDOWN",pf:"CPT/FO",refs:["AOP","COM","WLM"],note:"Amended taxi; APU DET INOP after readback; GPU; CC call (seat belts). Engine 1 and 2 below 20% call before anti-coll off. High-wind CC doors."}]}
+  ],
+  repeatsNote:"Once, at end (FEG 5.8.10). Record in EFOS.",
+  summary:"OPC",
+  admin:["EFOS completed and signed (OPC and training scenario recorded)","Debrief done: Result / Reason / Restrictions / Retraining / Retest (FEG 5.10.2)","Partial Pass / Fail: notify Crew Control and CI-SIM","Notes sent to standardsinstructors","3 T/O and landings FCL.060 achieved with training: annotate on form","Two Captains: LVO, RTO/EVAC and QRH reading done by each Captain in LHS","Weak competencies practised with remaining training time; indicators reviewed in debrief"],
+  setup:[
+   {title:"RST 3 OPC - Sim setup",ref:"Examiner Profiles RST 3 2026",rows:[
+    ["ACFT","ZFW 55.2 | FUEL 4.6 | CG 19.8","ZFW 59.0 | FUEL 3.7 | CG 21.7"],
+    ["POS","EIDW RW28L threshold","EIDW RW28L threshold"],
+    ["ENVIR","Night scene | Turb 8% | RW dry","Night scene | Turb 8% | RW dry"],
+    ["WX","240/12 125M OVC001 15 Q993","240/12 125M OVC001 15 Q993"],
+    ["FMC","EIDW - EGCC | RYR70DE","EIDW - EGCC | RYR2LG"],
+    ["RTE","EIDW/28L LIFFY7A UL975 MALUD1M EGCC/23R","EIDW/28L LIFFY7A UL975 MALUD1M EGCC/23R"],
+    ["INIT REF","RES 1.8 | ZFW 55.2 | CRZ FL270","RES 1.8 | ZFW 59.0 | CRZ FL270"],
+    ["N1 / THR","ATM 49 / OAT 15 | 22K","ATM 40 / OAT 15 | TO-2"],
+    ["T/O PERF","F5 | CG 19.8 | Trim 6.0 | V 135 / 135 / 138","F5 | CG 21.7 | Trim 6.0 | V 139 / 139 / 143"],
+    ["EOSID","DUBX4 hold 277 RT | MFRA 1243","DUBX4 hold 277 RT | MFRA 1243"],
+    ["RADIOS","TWR 118.600 | DEP 132.580","TWR 118.600 | DEP 132.580"],
+    ["MCP","CRS 278 | HDG 277 | ALT 3000 (FL90 stop for ENG seq.)","CRS 278 | HDG 277 | ALT 3000 (FL90 stop for ENG seq.)"]]},
+   {title:"RST 3 Training - Sim setup",ref:"Instructor Notes Rev 4",rows:[
+    ["ACFT","ZFW 57.8 | FUEL 4.2 | CG 16.3","ZFW 60.5 | FUEL 3.5 | CG 14.2"],
+    ["POS","EIDW RW16 threshold","EIDW RW16 threshold"],
+    ["ENVIR","Day scene | Turb 15% | RW wet","Day scene | Turb 10% | RW wet"],
+    ["WX","190/29G39 1000 SHRA BKN002 5/2 Q993 | Mid wind 170/45 | Tops FL120","190/29G39 1000 SHRA BKN002 5/2 Q993 | Mid wind 170/45 | Tops FL120"],
+    ["FMC","EIDW - EGCC | RYR70DE","EIDW - EGCC | RYR2LG"],
+    ["RTE","EIDW/16 LIFFY8M UL975 MALUD1M EGCC/23R","EIDW/16 LIFFY8M UL975 MALUD1M EGCC/23R"],
+    ["INIT REF","CI 6 | RES 2.0 | CRZ FL230","CI 6 | RES 1.8 | CRZ FL230"],
+    ["T/O PERF","OAT 5 | 26K | F5 | CG 16.3 | Trim 6.00 | V 128 / 133 / 144 (Vr 146)","OAT 5 | FULL | F5 | CG 14.2 | Trim 6.50 | V 126 / 134 / 144 (Vr 148)"],
+    ["EOSID","DUBX3 | MFRA 1243","DUBX3 | MFRA 1243"],
+    ["MCP","CRS 159 | HDG 159 | stop FL90","CRS 159 | HDG 159 | stop FL90"],
+    ["FUEL FREEZE","ON for GO/NO GO (OFF for DOOR LIGHT and LOS)","ON for GO/NO GO (OFF for DOOR LIGHT and LOS)"]]}
+  ]}
+};
+
+/* ---------------- Storage (IndexedDB on this device) ---------------- */
+const MEM={sessions:new Map(),photos:new Map()};
+const DB={
+ db:null,ok:false,
+ open(){return new Promise(res=>{
+  try{const r=indexedDB.open("cuaderno-tre",1);
+   r.onupgradeneeded=()=>{const d=r.result;if(!d.objectStoreNames.contains("sessions"))d.createObjectStore("sessions",{keyPath:"id"});if(!d.objectStoreNames.contains("photos")){const p=d.createObjectStore("photos",{keyPath:"id"});p.createIndex("sessionId","sessionId")}};
+   r.onsuccess=()=>{this.db=r.result;this.ok=true;res(true)};
+   r.onerror=()=>res(false);r.onblocked=()=>res(false);
+  }catch(e){res(false)}})},
+ tx(store,mode,fn){
+  if(!this.ok){return Promise.resolve(fn(null,store))}
+  return new Promise((res,rej)=>{const t=this.db.transaction(store,mode);const s=t.objectStore(store);let out;const r=fn(s);if(r)r.onsuccess=()=>{out=r.result};t.oncomplete=()=>res(out);t.onerror=()=>rej(t.error);t.onabort=()=>rej(t.error)})},
+ all(store){return this.tx(store,"readonly",(s,n)=>s?s.getAll():[...MEM[n].values()])},
+ put(store,v){return this.tx(store,"readwrite",(s,n)=>s?s.put(v):void MEM[n].set(v.id,v))},
+ del(store,k){return this.tx(store,"readwrite",(s,n)=>s?s.delete(k):void MEM[n].delete(k))},
+ photosOf(sid){return this.tx("photos","readonly",(s)=>s?s.index("sessionId").getAll(sid):[...MEM.photos.values()].filter(p=>p.sessionId===sid))}
+};
+
+/* ---------------- State ---------------- */
+let sessions=[];      // list for home
+let S=null;           // open session
+let P=[];             // photos of open session
+let sec="datos";
+let lastField=null;
+const urls=new Map(); // photo id -> objectURL
+const uid=()=>(crypto.randomUUID?crypto.randomUUID():Date.now().toString(36)+Math.random().toString(36).slice(2));
+const h=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const $=sel=>document.querySelector(sel);
+function getP(o,path){return path.split(".").reduce((a,k)=>a==null?a:a[k],o)}
+function setP(o,path,v){const ks=path.split(".");let a=o;ks.slice(0,-1).forEach(k=>{if(a[k]==null||typeof a[k]!=="object")a[k]={};a=a[k]});a[ks.at(-1)]=v}
+function tpl(){return T[S.type]}
+function allItems(t=tpl()){return t.sections.flatMap(s=>s.items.map(i=>({...i,sec:s})))}
+function today(){const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
+function lsGet(k){try{return localStorage.getItem(k)}catch(e){return null}}
+function lsSet(k,v){try{localStorage.setItem(k,v)}catch(e){}}
+
+function newSession(type){
+ const t=T[type];const pilot=()=>({...PILOT_BLANK});
+ const s={id:uid(),type,createdAt:Date.now(),updatedAt:Date.now(),date:today(),fstdCode:"",fstdType:"",crew:t.crew?"CPT / FO":"",examiner:"",
+  pilots:{cpt:pilot(),fo:pilot()},ex:{},repeats:"",grades:{},sum:{weakest:{cpt:"",fo:""},trainingDay:{cpt:"",fo:""},outcome:{cpt:"",fo:""},failed:{cpt:"",fo:""}},admin:{},notes:{general:"",cpt:"",fo:""}};
+ t.sections.forEach(sc=>sc.items.forEach(it=>{
+  let cpt=sc.def.cpt||"",fo=sc.def.fo||"";
+  if(it.pf==="CPT"){cpt="PF";fo="PM"} else if(it.pf==="FO"){cpt="PM";fo="PF"}
+  s.ex[it.id]={cpt:{role:cpt,comp:"",notes:""},fo:{role:fo,comp:"",notes:""}};
+ }));
+ COMPS.forEach(([c])=>s.grades[c]={cpt:"",fo:"",obsCpt:"",obsFo:""});
+ return s;
+}
+function normalize(s){ // upgrade sessions saved by earlier versions
+ ["cpt","fo"].forEach(k=>{s.pilots[k]={...PILOT_BLANK,...s.pilots[k]}});
+ COMPS.forEach(([c])=>{const g=s.grades[c]||(s.grades[c]={cpt:"",fo:""});if(g.obsCpt==null)g.obsCpt=g.obs||"";if(g.obsFo==null)g.obsFo=g.obs||"";delete g.obs});
+ s.notes=s.notes||{};["cpt","fo"].forEach(k=>{if(s.notes[k]==null)s.notes[k]=""});
+ return s;
+}
+
+/* ---------------- Saving ---------------- */
+let saveTimer=null;
+function dirty(){setSave("Saving…","");clearTimeout(saveTimer);saveTimer=setTimeout(saveNow,450)}
+async function saveNow(){
+ if(!S)return;clearTimeout(saveTimer);S.updatedAt=Date.now();
+ try{await DB.put("sessions",JSON.parse(JSON.stringify(S)));setSave(DB.ok?"Saved on this device":"Not saved (memory only)","ok")}
+ catch(e){setSave("Could not save","err")}
+}
+function setSave(t,c){const el=$("#saveState");if(el){el.textContent=t;el.className="save "+c}}
+
+/* ---------------- Rendering ---------------- */
+const app=$("#app");
+function render(){S?renderSession():renderHome()}
+
+function pilotLabel(k){if(k==="cpt")return S.crew==="CPT / CPT"?"CPT (LHS)":"CPT";return S.crew==="CPT / CPT"?"CPT (RHS)":"FO"}
+function pilotName(k){return (S.pilots[k].name||"").trim()}
+
+async function renderHome(){
+ sessions=(await DB.all("sessions")).sort((a,b)=>b.updatedAt-a.updatedAt);
+ const rows=sessions.map(s=>{const t=T[s.type];const n=[s.pilots.cpt.name&&"CPT "+s.pilots.cpt.name,s.pilots.fo.name&&(s.crew==="CPT / CPT"?"CPT ":"FO ")+s.pilots.fo.name].filter(Boolean).join(" · ")||"Pilots not named yet";
+  return `<div class="srow"><button class="open" data-open="${h(s.id)}"><span><span class="badge">${h(t.short)}</span><b>${h(fmtDate(s.date))}</b>${s.fstdCode?` <span class="muted">· ${h(s.fstdCode)}</span>`:""}${s.fstdType?` <span class="muted">· ${h(s.fstdType)}</span>`:""}</span><span class="names">${h(n)}</span></button><span data-delwrap="${h(s.id)}"><button class="btn small ghost" data-askdel="${h(s.id)}">Delete</button></span></div>`}).join("");
+ app.innerHTML=`
+ <header class="top"><div class="wrap top-row" style="max-width:900px;margin:0 auto"><div class="top-title"><h1>TRE Sim Notebook</h1><div class="sub">B737 · RST 3 and RST 4 templates</div></div></div></header>
+ <div class="wrap"><div class="home">
+  ${DB.ok?"":`<div class="banner bad">This browser does not allow saving data here. Anything you type is lost when the page closes, so export the PDF before leaving.</div>`}
+  ${installHint()}
+  <section class="hero"><span class="lbl">New session</span></section>
+  <div class="newrow">
+   <button class="newbtn" data-new="LPC"><span class="plus">+ RST 4</span><span class="t">LPC</span><span class="d">LOFT, FO and CAPT manoeuvres, RHS, repeats, Training Day A–G</span></button>
+   <button class="newbtn" data-new="OPC"><span class="plus">+ RST 3</span><span class="t">OPC + Training</span><span class="d">F1–F9, C1–C6, GO/NO GO T1–T8, LOFT/LOS/FPM T9–T16, sim setup</span></button>
+  </div>
+  <section class="hero" style="margin-top:6px"><span class="lbl">Sessions saved on this device</span></section>
+  <div class="slist">${rows||`<div class="empty">No sessions yet. Start an LPC or OPC above; it saves automatically as you type.</div>`}</div>
+  <div class="card" style="display:flex;flex-direction:column;gap:10px">
+   <h3>Backup</h3>
+   <p class="muted" style="margin:0;font-size:14px">Sessions and photos live only on this device. Save a backup now and then, or use it to move sessions between iPhone and iPad.</p>
+   <div class="foot"><button class="btn" data-act="backup" ${sessions.length?"":"disabled"}>Save backup (.json)</button><button class="btn" data-act="import">Import backup</button></div>
+  </div>
+ </div></div>`;
+}
+function fmtDate(d){if(!d)return "No date";const [y,m,dd]=d.split("-");return `${dd}/${m}/${y}`}
+
+function navSections(){
+ const t=tpl();const list=[["datos","Session & pilots"]];
+ if(t.setup)list.push(["setup","Sim setup"]);
+ t.sections.forEach(s=>list.push([s.id,s.nav,s]));
+ list.push(["resumen","Summary & notes"],["cierre","Closing"],["exportar","Export PDF"]);
+ return list;
+}
+function filled(id){const e=S.ex[id];return e&&((e.cpt.notes||"").trim()||(e.fo.notes||"").trim()||(e.cpt.comp||"").trim()||(e.fo.comp||"").trim())}
+
+function renderSession(){
+ const t=tpl();
+ const nav=navSections().map(([id,label,s])=>{let cnt="";if(s){const n=s.items.filter(i=>filled(i.id)).length;cnt=`<span class="cnt">${n}/${s.items.length}</span>`}
+  return `<button data-sec="${id}" aria-current="${sec===id}">${h(label)}${cnt}</button>`}).join("");
+ const codes=CODES.map(c=>`<button class="chip" data-ins="${h(c)}">${h(c)}</button>`).join("")+`<span class="sep"></span>`+FLAGS.map(c=>`<button class="chip flag" data-ins="${h(c)}">${h(c)}</button>`).join("")+`<span class="sep"></span>`+TAGS.map(c=>`<button class="chip tag" data-ins="${h(c)}">${h(c)}</button>`).join("");
+ app.innerHTML=`
+ <header class="top"><div class="wrap" style="max-width:1240px;margin:0 auto">
+  <div class="top-row"><button class="btn small" data-act="home" aria-label="Back to sessions">‹ Sessions</button>
+   <div class="top-title"><h1>${h(t.short)}</h1><div class="sub">${h(fmtDate(S.date))}${S.fstdCode?" · "+h(S.fstdCode):""}${S.fstdType?" · "+h(S.fstdType):""}</div></div>
+   <span id="saveState" class="save ok">${DB.ok?"Saved on this device":"Not saved (memory only)"}</span>
+   <button class="btn small primary" data-sec="exportar">PDF</button></div>
+  ${sec==="exportar"||sec==="setup"?"":`<div class="codes" aria-label="Note codes: tap to insert into the active field">${codes}</div>`}
+ </div></header>
+ <div class="wrap"><div class="shell"><nav class="nav" aria-label="Sections">${nav}</nav><main id="main">${renderSec()}</main></div></div>`;
+ autosizeAll();
+ const cur=app.querySelector('.nav [aria-current="true"]');if(cur&&cur.scrollIntoView&&innerWidth<900)cur.scrollIntoView({inline:"center",block:"nearest"});
+}
+
+function inp(path,label,opts={}){const v=getP(S,path)??"";
+ return `<label class="field"><span class="lbl">${h(label)}</span><input id="f-${h(path)}" type="${opts.type||"text"}" data-k="${h(path)}" value="${h(v)}" ${opts.ph?`placeholder="${h(opts.ph)}"`:""} autocomplete="off" ${opts.caps?'autocapitalize="characters"':""}></label>`}
+function seg(path,vals,cls="",disabled=[]){const v=getP(S,path)??"";
+ return `<div class="seg ${cls}" data-seg="${h(path)}">${vals.map(x=>{const [val,lab]=Array.isArray(x)?x:[x,x];return `<button type="button" data-val="${h(val)}" aria-pressed="${v===val}" ${disabled.includes(val)?"disabled":""}>${h(lab)}</button>`}).join("")}</div>`}
+function segField(path,label,vals,cls){return `<div class="field"><span class="lbl">${h(label)}</span>${seg(path,vals,cls)}</div>`}
+function ta(path,ph="",rows=3){return `<textarea id="f-${h(path)}" data-k="${h(path)}" rows="${rows}" placeholder="${h(ph)}">${h(getP(S,path)??"")}</textarea>`}
+
+function renderSec(){
+ const t=tpl();
+ if(sec==="datos"){
+  const dateUpdt=(k,f,label)=>`<div class="field"><span class="lbl">${h(label)}</span><div class="pair"><input id="f-pilots.${k}.${f}" type="date" data-k="pilots.${k}.${f}" value="${h(S.pilots[k][f])}" aria-label="${h(label)}"><span class="updt"><span class="lbl">UPDT</span>${seg(`pilots.${k}.${f}Updt`,["YES","NO"])}</span></div></div>`;
+  const elpSel=k=>{const v=S.pilots[k].elp;return `<div class="field"><span class="lbl">ELP</span><div class="pair"><select id="f-pilots.${k}.elp" data-k="pilots.${k}.elp" aria-label="ELP"><option value="" ${v?"":"selected"}>–</option>${["4","5","6"].map(x=>`<option value="${x}" ${v===x?"selected":""}>${x}</option>`).join("")}</select><span class="updt"><span class="lbl">UPDT</span>${seg(`pilots.${k}.elpUpdt`,["YES","NO"])}</span></div></div>`};
+  const pilotCard=k=>`<div class="card" style="display:flex;flex-direction:column;gap:12px"><h3>Pilot · ${h(pilotLabel(k))}</h3>
+   <div class="grid">${inp(`pilots.${k}.name`,"Name")}${inp(`pilots.${k}.crewcode`,"Crewcode",{caps:true})}${inp(`pilots.${k}.license`,"License No / Type",{caps:true})}</div>
+   <div class="grid">${dateUpdt(k,"trir","TR/IR validity")}${dateUpdt(k,"medical","Medical expiry")}</div>
+   <div class="grid">${inp(`pilots.${k}.passport`,"Passport No",{caps:true})}${inp(`pilots.${k}.passportExp`,"Passport expiry",{type:"date"})}</div>
+   <div class="grid">${inp(`pilots.${k}.techExam`,"Tech exam")}${elpSel(k)}${segField(`pilots.${k}.attempt`,"Attempt",["1st","2nd"])}</div>
+   <div class="grid">${segField(`pilots.${k}.outcome`,"Outcome",["PASS","PARTIAL PASS","FAIL"])}${inp(`pilots.${k}.failed`,"Failed items")}</div></div>`;
+  return `<div class="sec-head"><h2>Session & pilots</h2>${t.timing?`<span class="sub mono">${h(t.timing)}</span>`:""}</div>
+  <div class="card" style="display:flex;flex-direction:column;gap:12px"><h3>Session</h3>
+   <div class="grid"><label class="field"><span class="lbl">Session</span><input value="${h(t.session)}" readonly></label>
+   ${inp("date","Date",{type:"date"})}${inp("fstdCode","FSTD & code",{caps:true})}${inp("examiner","Examiner / EFOS")}</div>
+   <div class="grid">${segField("fstdType","FSTD type",["B737-800","B737-8200"])}
+   ${t.crew?segField("crew","Crew",["CPT / FO","CPT / CPT",["with body",'With "body"']]):""}</div></div>
+  ${pilotCard("cpt")}${pilotCard("fo")}`;
+ }
+ if(sec==="setup"){
+  const col=S.fstdType==="B737-800"?1:S.fstdType==="B737-8200"?2:0;
+  return `<div class="sec-head"><h2>Sim setup</h2><span class="sub">Read-only reference${col?" · "+h(S.fstdType)+" highlighted":""}</span></div>`+
+  t.setup.map(st=>`<div class="card" style="display:flex;flex-direction:column;gap:8px"><h3>${h(st.title)}</h3><span class="muted" style="font-size:12px">Reference: ${h(st.ref)}</span>
+   <div class="tscroll"><table class="setup"><thead><tr><th></th><th>-800</th><th>-8200</th></tr></thead><tbody>${st.rows.map(r=>`<tr><th>${h(r[0])}</th><td class="${col===1?"on":""}">${h(r[1])}</td><td class="${col===2?"on":""}">${h(r[2])}</td></tr>`).join("")}</tbody></table></div></div>`).join("");
+ }
+ const s=t.sections.find(x=>x.id===sec);
+ if(s){
+  return `<div class="sec-head"><h2>${h(s.title)}</h2><span class="sub">${h(s.sub)}</span></div>`+
+   s.items.map(it=>exCard(it)).join("")+
+   (s.repeats?`<div class="card ex"><div class="ex-head"><span class="ex-name">REPEATS</span></div><div class="guide">${h(t.repeatsNote)}</div><label class="field"><span class="lbl">Item / Pilot / Result</span>${ta("repeats","e.g. F6 EFATO / FO / repeated -> PASS",3)}</label></div>`:"");
+ }
+ if(sec==="resumen"){
+  const pc=(c,k,ok)=>`<div class="pcell"><div class="ph"><span class="lbl">${h(pilotLabel(k))}${pilotName(k)?" · "+h(pilotName(k)):""}</span>${seg(`grades.${c}.${k}`,["1","2","3","4","5"],"grade")}</div>
+    <textarea class="obs" id="f-grades.${h(c)}.${ok}" data-k="grades.${h(c)}.${ok}" rows="2" placeholder="Key observations">${h(S.grades[c][ok]||"")}</textarea></div>`;
+  const rows=COMPS.map(([c,n])=>`<div class="grow"><div class="cname"><b>${h(c)}</b><span>${h(n)}</span></div>${pc(c,"cpt","obsCpt")}${pc(c,"fo","obsFo")}</div>`).join("");
+  const kv=(label,inner)=>`<div class="kv"><span class="lbl" style="padding-top:8px">${label}</span>${inner("cpt")}${inner("fo")}</div>`;
+  const plab=k=>`<span class="lbl">${h(pilotLabel(k))}</span>`;
+  const no8F=S.fstdType==="B737-800"?["F"]:[];
+  let extra="";
+  if(t.summary==="LPC"){
+   extra=kv("Weakest competency",k=>`<div class="field">${plab(k)}${seg(`sum.weakest.${k}`,COMPS.map(c=>c[0]))}</div>`)+
+    kv("Training day (A–G)",k=>`<div class="field">${plab(k)}${seg(`sum.trainingDay.${k}`,["A","B","C","D","E","F","G"],"",no8F)}</div>`)+
+    kv("Outcome",k=>`<div class="field">${plab(k)}${seg(`sum.outcome.${k}`,["P","PP","F"],"grade")}</div>`);
+  }else{
+   extra=kv("OPC outcome",k=>`<div class="field">${plab(k)}${seg(`sum.outcome.${k}`,["P","PP","F"],"grade")}</div>`)+
+    kv("Weakest competency",k=>`<div class="field">${plab(k)}${seg(`sum.weakest.${k}`,COMPS.map(c=>c[0]))}</div>`)+
+    kv("Failed items",k=>`<label class="field">${plab(k)}<input id="f-sum.failed.${k}" data-k="sum.failed.${k}" value="${h(S.sum.failed[k])}"></label>`);
+  }
+  return `<div class="sec-head"><h2>Summary</h2><span class="sub">Grades 1–5 (FEG 5.11) · optional: leave blank to have them proposed in the analysis</span></div>
+  <div class="card"><div class="gtable">${rows}</div></div>
+  <div class="card">${extra}</div>
+  ${t.summary==="LPC"?`<p class="muted" style="font-size:12px;margin:0">* Day F only in -8200 sims. Partial Pass: ≤5 items failed; Fail: &gt;5 items or criteria met (FEG 5.8.9). Assign in EFOS "Training Scenario".</p>`:""}
+  ${notesCard()}`;
+ }
+ if(sec==="cierre"){
+  return `<div class="sec-head"><h2>Closing</h2><span class="sub">Admin checklist</span></div>
+  <div class="card">${t.admin.map((a,i)=>`<label class="check"><input type="checkbox" id="adm-${i}" data-chk="admin.a${i}" ${S.admin["a"+i]?"checked":""}><span>${h(a)}</span></label>`).join("")}</div>`;
+ }
+ if(sec==="exportar")return renderExport();
+ return "";
+}
+function notesCard(){
+ return `<div class="card" style="display:flex;flex-direction:column;gap:12px"><h3>General notes</h3><div class="pilots">
+  <label class="field"><span class="lbl">${h(pilotLabel("cpt"))}${pilotName("cpt")?" · "+h(pilotName("cpt")):""}</span>${ta("notes.cpt","",5)}</label>
+  <label class="field"><span class="lbl">${h(pilotLabel("fo"))}${pilotName("fo")?" · "+h(pilotName("fo")):""}</span>${ta("notes.fo","",5)}</label></div></div>`;
+}
+
+function exCard(it){
+ const e=S.ex[it.id];const ph=P.filter(p=>p.exId===it.id);
+ const panel=k=>`<div class="pilot"><div class="pilot-top"><span class="who"><b>${h(pilotLabel(k))}</b>${h(pilotName(k)||"—")}</span>${seg(`ex.${it.id}.${k}.role`,["PF","PM"],"role")}</div>
+   <div class="comp-row"><span class="lbl">Comp</span><input id="f-ex.${h(it.id)}.${k}.comp" data-k="ex.${h(it.id)}.${k}.comp" value="${h(e[k].comp)}" placeholder="e.g. FPM-M, SA" autocapitalize="characters" autocomplete="off"></div>
+   ${ta(`ex.${it.id}.${k}.notes`,"Notes",3)}</div>`;
+ return `<article class="card ex ${filled(it.id)?"has-notes":""}" id="ex-${h(it.id)}">
+  <div class="ex-head">${it.code?`<span class="ex-code">${h(it.code)}</span>`:""}<span class="ex-name">${h(it.name)}</span></div>
+  ${(it.pf||it.cond||it.refs.length)?`<div class="ex-meta">${it.pf?`<span class="lbl">PF</span><span class="cond">${h(it.pf)}</span>`:""}${it.cond?`<span class="cond">· ${h(it.cond)}</span>`:""}${it.refs.map(r=>`<span class="ref">${h(r)}</span>`).join("")}</div>`:""}
+  ${it.note?`<div class="guide">${h(it.note)}</div>`:""}
+  <div class="pilots">${panel("cpt")}${panel("fo")}</div>
+  <div class="photos">${ph.map(p=>`<button class="thumb" data-photo="${h(p.id)}" aria-label="View photo"><img src="${photoURL(p)}" alt="Evidence ${h(it.code||it.name)}"></button>`).join("")}
+   <label class="btn small addphoto">＋ Photo<input type="file" accept="image/*" data-addphoto="${h(it.id)}"></label></div>
+ </article>`;
+}
+function photoURL(p){if(!urls.has(p.id))urls.set(p.id,URL.createObjectURL(p.blob));return urls.get(p.id)}
+
+/* ---------------- Export view ---------------- */
+function issues(){
+ const out=[];
+ if(!S.date)out.push("Session date is missing.");
+ if(!S.fstdType)out.push("FSTD type (-800 / -8200) is missing.");
+ ["cpt","fo"].forEach(k=>{const p=S.pilots[k],l=pilotLabel(k);
+  if(!p.name.trim())out.push(`${l} name is missing.`);
+  if(!p.elp)out.push(`${l} ELP is missing.`)});
+ const items=allItems();const empty=items.filter(i=>!filled(i.id));
+ if(empty.length)out.push(`${empty.length} of ${items.length} exercises have no notes (they will print empty; write N/O if not done).`);
+ const noRole=items.filter(i=>!S.ex[i.id].cpt.role&&!S.ex[i.id].fo.role&&filled(i.id));
+ if(noRole.length)out.push(`No PF/PM ticked on: ${noRole.map(i=>i.code||i.name).join(", ")}.`);
+ return out;
+}
+function renderExport(){
+ const is=issues();
+ return `<div class="sec-head"><h2>Export</h2><span class="sub">PDF for the competency assessment</span></div>
+ <div class="card" style="display:flex;flex-direction:column;gap:10px"><h3>Before sending</h3>
+  <ul class="issues">${is.length?is.map(x=>`<li>${h(x)}</li>`).join(""):`<li class="ok">Everything needed for the analysis is filled in.</li>`}</ul></div>
+ <div class="card" style="display:flex;flex-direction:column;gap:12px"><h3>Session PDF</h3>
+  <p class="muted" style="margin:0;font-size:14px">Includes session and pilot data, every exercise with PF/PM, COMP and notes, repeats, summary, checklist, general notes and an annex with numbered photos (E1, E2…).</p>
+  <label class="check"><input type="checkbox" id="optPassport" ${lsGet("tre.pdfPassport")==="1"?"checked":""}><span>Include passport number in the PDF</span></label>
+  <div class="foot"><button class="btn primary" data-act="pdf">Generate PDF</button><button class="btn" data-act="copy">Copy notes as text</button></div>
+  <ol class="steps"><li>Tap <b>Generate PDF</b>. On iPhone or iPad the Share sheet opens: choose <b>Save to Files</b> (or share straight to the Claude app).</li><li>Open a chat with Claude and attach the PDF.</li><li>No file needed? <b>Copy notes as text</b> and paste it into the chat (photos not included).</li></ol>
+  <div id="exportMsg"></div></div>`;
+}
+
+/* ---------------- Events ---------------- */
+app.addEventListener("input",e=>{
+ const el=e.target;
+ if(el.dataset.k){setP(S,el.dataset.k,el.value);dirty();
+  if(el.tagName==="TEXTAREA")autosize(el);
+  const card=el.closest(".ex");if(card){const id=card.id.slice(3);card.classList.toggle("has-notes",!!filled(id));updateNavCounts()}
+  if(/^pilots\.|^date|^fstd/.test(el.dataset.k))updateHeaderSub();
+ }
+});
+app.addEventListener("change",async e=>{
+ const el=e.target;
+ if(el.dataset.chk){setP(S,el.dataset.chk,el.checked);dirty()}
+ if(el.id==="optPassport")lsSet("tre.pdfPassport",el.checked?"1":"0");
+ if(el.dataset.addphoto&&el.files&&el.files[0]){const exId=el.dataset.addphoto;const f=el.files[0];el.value="";await addPhoto(exId,f)}
+});
+app.addEventListener("focusin",e=>{const el=e.target;if((el.tagName==="TEXTAREA"||(el.tagName==="INPUT"&&el.type==="text"))&&el.dataset.k)lastField=el});
+app.addEventListener("pointerdown",e=>{if(e.target.closest("[data-ins]"))e.preventDefault()});
+app.addEventListener("click",async e=>{
+ const b=e.target.closest("button");if(!b)return;
+ if(b.dataset.ins){insertCode(b.dataset.ins);return}
+ if(b.dataset.new){S=newSession(b.dataset.new);P=[];sec="datos";await saveNow();lsSet("tre.last",S.id);render();scrollTo(0,0);return}
+ if(b.dataset.open){await openSession(b.dataset.open);return}
+ if(b.dataset.askdel){const w=app.querySelector(`[data-delwrap="${CSS.escape(b.dataset.askdel)}"]`);w.innerHTML=`<span class="foot" style="gap:6px"><span class="muted" style="font-size:13px">Delete session and photos?</span><button class="btn small danger" data-del="${h(b.dataset.askdel)}">Delete</button><button class="btn small" data-act="home">Keep</button></span>`;return}
+ if(b.dataset.del){await deleteSession(b.dataset.del);return}
+ if(b.dataset.sec){sec=b.dataset.sec;await saveNow();renderSession();scrollTo(0,0);return}
+ if(b.dataset.photo){openPhoto(b.dataset.photo);return}
+ const segEl=b.closest("[data-seg]");
+ if(segEl&&b.dataset.val!==undefined){const path=segEl.dataset.seg;const cur=getP(S,path);const v=cur===b.dataset.val?"":b.dataset.val;setP(S,path,v);
+  segEl.querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed",x.dataset.val===v));dirty();
+  if(path==="crew"||path==="fstdType")renderSession();
+  return}
+ const act=b.dataset.act;
+ if(act==="home"){await saveNow();S=null;P=[];lsSet("tre.last","");freeURLs();render();scrollTo(0,0)}
+ if(act==="pdf")exportPDF(b);
+ if(act==="copy")copyText(b);
+ if(act==="backup")backup(b);
+ if(act==="import")$("#importFile").click();
+});
+function updateNavCounts(){const t=tpl();t.sections.forEach(s=>{const btn=app.querySelector(`.nav [data-sec="${s.id}"] .cnt`);if(btn)btn.textContent=s.items.filter(i=>filled(i.id)).length+"/"+s.items.length})}
+function updateHeaderSub(){const el=app.querySelector(".top-title .sub");if(el)el.textContent=fmtDate(S.date)+(S.fstdCode?" · "+S.fstdCode:"")+(S.fstdType?" · "+S.fstdType:"")}
+function insertCode(code){
+ const el=lastField&&document.body.contains(lastField)?lastField:null;
+ if(!el){toast("Tap a notes field first");return}
+ const s=el.selectionStart??el.value.length,e2=el.selectionEnd??el.value.length;
+ const before=el.value.slice(0,s),after=el.value.slice(e2);
+ const pre=before&&!/\s$/.test(before)?" ":"";const post=after&&!/^\s/.test(after)?" ":" ";
+ el.value=before+pre+code+post+after;const pos=(before+pre+code+post).length;
+ try{el.setSelectionRange(pos,pos)}catch(x){}
+ el.focus();el.dispatchEvent(new Event("input",{bubbles:true}));
+}
+function autosize(el){el.style.height="auto";el.style.height=Math.max(el.classList.contains("obs")?60:84,el.scrollHeight+2)+"px"}
+function autosizeAll(){app.querySelectorAll("textarea").forEach(autosize)}
+function freeURLs(){urls.forEach(u=>URL.revokeObjectURL(u));urls.clear()}
+function toast(msg){document.querySelectorAll(".toast").forEach(x=>x.remove());const t=document.createElement("div");t.className="toast";t.setAttribute("role","status");t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),2800)}
+
+async function openSession(id){
+ const all=await DB.all("sessions");const s=all.find(x=>x.id===id);if(!s)return;
+ S=normalize(s);P=(await DB.photosOf(id)).sort((a,b)=>a.createdAt-b.createdAt);sec="datos";lsSet("tre.last",id);renderSession();scrollTo(0,0);
+}
+async function deleteSession(id){
+ const ph=await DB.photosOf(id);for(const p of ph)await DB.del("photos",p.id);
+ await DB.del("sessions",id);toast("Session deleted");renderHome();
+}
+
+/* ---------------- Photos ---------------- */
+async function shrink(file){
+ try{
+  const bmp=await new Promise((res,rej)=>{const img=new Image();img.onload=()=>res(img);img.onerror=rej;img.src=URL.createObjectURL(file)});
+  const max=1600;let w=bmp.naturalWidth,hh=bmp.naturalHeight;const sc=Math.min(1,max/Math.max(w,hh));w=Math.round(w*sc);hh=Math.round(hh*sc);
+  const c=document.createElement("canvas");c.width=w;c.height=hh;c.getContext("2d").drawImage(bmp,0,0,w,hh);URL.revokeObjectURL(bmp.src);
+  const blob=await new Promise(r=>c.toBlob(r,"image/jpeg",.82));return {blob:blob||file,w,h:hh};
+ }catch(e){return {blob:file,w:0,h:0}}
+}
+async function addPhoto(exId,file){
+ toast("Adding photo…");
+ const {blob,w,h:hh}=await shrink(file);
+ const p={id:uid(),sessionId:S.id,exId,blob,w,h:hh,caption:"",createdAt:Date.now()};
+ try{await DB.put("photos",p);P.push(p);
+  const card=$("#ex-"+CSS.escape(exId));if(card){const it=allItems().find(i=>i.id===exId);card.outerHTML=exCard(it);autosizeAll()}
+  toast("Photo added");dirty();
+ }catch(e){toast("Could not save the photo")}
+}
+function openPhoto(id){
+ const p=P.find(x=>x.id===id);if(!p)return;const it=allItems().find(i=>i.id===p.exId);
+ const lb=document.createElement("div");lb.className="lb";lb.setAttribute("role","dialog");lb.setAttribute("aria-modal","true");
+ lb.innerHTML=`<div class="lb-box"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><b>${h((it.code?it.code+" · ":"")+it.name)}</b><button class="btn small" data-lb="close">Close</button></div>
+  <img src="${photoURL(p)}" alt="">
+  <label class="field"><span class="lbl">Caption (printed in the PDF)</span><input id="cap-${h(p.id)}" value="${h(p.caption)}" placeholder="e.g. FMA at 400 ft" style="width:100%;border:1px solid var(--line);background:var(--surface-2);border-radius:7px;padding:9px 10px;font-size:16px"></label>
+  <div class="foot" data-lbdel><button class="btn small danger" data-lb="ask">Delete photo</button></div></div>`;
+ document.body.appendChild(lb);
+ const cap=lb.querySelector("input");cap.addEventListener("input",()=>{p.caption=cap.value;DB.put("photos",p)});
+ lb.addEventListener("click",async ev=>{
+  const b=ev.target.closest("[data-lb]");if(ev.target===lb){lb.remove();return}if(!b)return;
+  if(b.dataset.lb==="close")lb.remove();
+  if(b.dataset.lb==="ask")lb.querySelector("[data-lbdel]").innerHTML=`<span class="muted" style="font-size:13px">Delete this photo?</span><button class="btn small danger" data-lb="del">Delete</button><button class="btn small" data-lb="close">Keep</button>`;
+  if(b.dataset.lb==="del"){await DB.del("photos",p.id);P=P.filter(x=>x.id!==p.id);if(urls.has(p.id)){URL.revokeObjectURL(urls.get(p.id));urls.delete(p.id)}lb.remove();
+   const card=$("#ex-"+CSS.escape(p.exId));if(card){card.outerHTML=exCard(it);autosizeAll()}toast("Photo deleted")}
+ });
+}
+
+/* ---------------- Files out (artifact downloads / share sheet / plain download) ---------------- */
+let dlPromise=null;
+function getDownloads(){if(!dlPromise)dlPromise=(window.claude&&window.claude.use)?window.claude.use("downloads").catch(()=>null):Promise.resolve(null);return dlPromise}
+async function giveFile(filename,blob){
+ const dl=await getDownloads();
+ if(dl){try{await dl.save({filename,data:blob});return "saved"}catch(e){if(e&&e.code==="declined")return "declined";if(e&&e.code==="rate_limited")return "busy"}}
+ if(!window.claude){
+  try{const f=new File([blob],filename,{type:blob.type});if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f],title:filename});return "saved"}}catch(e){if(e&&e.name==="AbortError")return "declined"}
+  const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=filename;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},2000);return "saved";
+ }
+ return "unavailable";
+}
+
+/* ---------------- PDF ---------------- */
+function pt(s){return String(s??"").replace(/[‘’‛]/g,"'").replace(/[“”]/g,'"').replace(/[–—]/g,"-").replace(/…/g,"...").replace(/→/g,"->").replace(/←/g,"<-").replace(/≤/g,"<=").replace(/≥/g,">=").replace(/•/g,"-").replace(/[^\n\r\t\x20-\x7E -ÿ]/g,"?")}
+function blobToDataURL(b){return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsDataURL(b)})}
+function evidenceList(){const order=allItems().map(i=>i.id);return P.slice().sort((a,b)=>order.indexOf(a.exId)-order.indexOf(b.exId)||a.createdAt-b.createdAt).map((p,i)=>({...p,label:"E"+(i+1)}))}
+function fileBase(){const t=tpl();return `${S.date||"sin-fecha"}_${t.key}${S.fstdCode?"_"+S.fstdCode.replace(/[^\w-]+/g,""):""}`}
+
+async function exportPDF(btn){
+ const msg=$("#exportMsg");
+ if(!window.jspdf||!window.jspdf.jsPDF){msg.innerHTML=`<div class="banner bad">The PDF generator did not load. Check the connection and reload the page. Meanwhile you can use "Copy notes as text".</div>`;return}
+ btn.disabled=true;btn.textContent="Generating…";
+ try{
+  await saveNow();
+  const blob=await buildPDF();
+  const r=await giveFile(fileBase()+".pdf",blob);
+  msg.innerHTML=r==="saved"?`<div class="banner" style="background:var(--pf-soft)">PDF ready (${Math.round(blob.size/1024)} KB). Attach it in the chat for the analysis.</div>`:r==="declined"?`<div class="banner">Saving was cancelled. Generate it again whenever you like.</div>`:r==="busy"?`<div class="banner">A save window is already open. Close it and try again.</div>`:`<div class="banner bad">This view cannot save files. Open the notebook from the Claude app, claude.ai or its own web address.</div>`;
+ }catch(e){console.error(e);msg.innerHTML=`<div class="banner bad">Could not generate the PDF: ${h(e.message||e)}</div>`}
+ btn.disabled=false;btn.textContent="Generate PDF";
+}
+
+async function buildPDF(){
+ const t=tpl();const {jsPDF}=window.jspdf;
+ const doc=new jsPDF({unit:"mm",format:"a4"});
+ const W=doc.internal.pageSize.getWidth(),H=doc.internal.pageSize.getHeight(),M=12;
+ const ink=[20,32,45],mut=[91,105,118],acc=[28,90,156],soft=[236,241,246],line=[200,208,216];
+ const inclPass=lsGet("tre.pdfPassport")==="1";
+ const ev=evidenceList();const evBy={};ev.forEach(p=>{(evBy[p.exId]=evBy[p.exId]||[]).push(p.label)});
+ const cptH=`${pilotLabel("cpt")}${pilotName("cpt")?" - "+pilotName("cpt"):""}`,foH=`${pilotLabel("fo")}${pilotName("fo")?" - "+pilotName("fo"):""}`;
+ let y=M;
+ const base={theme:"grid",margin:{left:M,right:M,top:M+4,bottom:14},styles:{font:"helvetica",fontSize:8.6,cellPadding:1.8,textColor:ink,lineColor:line,lineWidth:.2,overflow:"linebreak",valign:"top"},headStyles:{fillColor:soft,textColor:ink,fontStyle:"bold",lineColor:line,lineWidth:.2}};
+ const heading=(txt,sub)=>{if(y>H-40){doc.addPage();y=M}doc.setFont("helvetica","bold");doc.setFontSize(12);doc.setTextColor(...acc);doc.text(pt(txt),M,y+5);const tw=doc.getTextWidth(pt(txt));if(sub){doc.setFont("helvetica","normal");doc.setFontSize(8);doc.setTextColor(...mut);const ln=doc.splitTextToSize(pt(sub.trim()),W-2*M-tw-4)[0]||"";doc.text(ln,M+tw+3,y+5);}y+=8};
+ const after=()=>{y=doc.lastAutoTable.finalY+6};
+
+ // Title
+ doc.setFont("helvetica","bold");doc.setFontSize(17);doc.setTextColor(...ink);doc.text(pt(t.session+" - Session notes"),M,y+6);
+ doc.setFont("helvetica","normal");doc.setFontSize(9);doc.setTextColor(...mut);doc.text(pt(`${fmtDate(S.date)}  |  ${S.fstdType||"FSTD type ?"}  |  ${S.fstdCode||"FSTD code ?"}${t.timing?"  |  "+t.timing:""}`),M,y+12);
+ y+=18;
+
+ doc.autoTable({...base,startY:y,body:[["SESSION",t.session],["DATE",fmtDate(S.date)],["FSTD & CODE",S.fstdCode],["FSTD TYPE",S.fstdType],...(t.crew?[["CREW",S.crew]]:[]),["EXAMINER / EFOS",S.examiner]].map(r=>r.map(pt)),columnStyles:{0:{fontStyle:"bold",cellWidth:40,fillColor:soft}}});after();
+
+ const prow=pilotRows(inclPass);
+ doc.autoTable({...base,startY:y,head:[["",pt(pilotLabel("cpt")),pt(pilotLabel("fo"))]],body:prow.map(([l,f])=>[l,pt(f("cpt")),pt(f("fo"))]),columnStyles:{0:{fontStyle:"bold",cellWidth:40,fillColor:soft}}});after();
+
+ doc.setFont("helvetica","normal");doc.setFontSize(7.5);doc.setTextColor(...mut);
+ doc.text(pt("Note code: + / - positive/negative | P prompted | D deviation with value | STD standard | N/O not observed | -> rec / -> no rec | REP repeat at end (FEG 5.8.10) | FREEZE | Tags AOP K FPM-A FPM-M COM L&T PSDM SA WLM"),M,y,{maxWidth:W-2*M});y+=9;
+
+ for(const s of t.sections){
+  heading(s.title,"  "+s.sub);
+  const body=s.items.map(it=>{const e=S.ex[it.id];
+   const left=[(it.code?it.code+"  ":"")+it.name,[it.pf?"PF: "+it.pf:"",it.cond||""].filter(Boolean).join(" | "),it.refs.length?it.refs.join("  "):"",evBy[it.id]?"Evidence: "+evBy[it.id].join(", "):""].filter(Boolean).join("\n");
+   const cell=k=>{const x=e[k];const head=[x.role||"PF/PM: -",x.comp?"COMP: "+x.comp:""].filter(Boolean).join("   ");return head+"\n"+(x.notes||"").trim()};
+   return [pt(left),pt(cell("cpt")),pt(cell("fo"))]});
+  doc.autoTable({...base,startY:y,head:[["EXERCISE",pt(cptH),pt(foH)]],body,columnStyles:{0:{cellWidth:46,fontStyle:"bold"}},
+   didParseCell:d=>{if(d.section==="body"&&d.column.index>0){const v=String(d.cell.raw).split("\n")[0];if(/^PF(\s|$)/.test(v))d.cell.styles.fillColor=[234,246,240]}}});
+  after();
+  if(s.repeats){doc.autoTable({...base,startY:y,body:[["REPEATS\n"+pt(t.repeatsNote),pt(S.repeats||"")]],columnStyles:{0:{cellWidth:46,fontStyle:"bold"}}});after()}
+ }
+
+ heading("Summary & closing","  Grades 1-5 (FEG 5.11)");
+ doc.autoTable({...base,startY:y,head:[["COMPETENCY",pt(pilotLabel("cpt")),"KEY OBSERVATIONS - "+pt(pilotLabel("cpt")),pt(pilotLabel("fo")),"KEY OBSERVATIONS - "+pt(pilotLabel("fo"))]],body:COMPS.map(([c,n])=>[`${c} - ${n}`,S.grades[c].cpt||"",pt(S.grades[c].obsCpt),S.grades[c].fo||"",pt(S.grades[c].obsFo)]),columnStyles:{0:{cellWidth:38,fontStyle:"bold"},1:{cellWidth:12,halign:"center",fontStyle:"bold"},3:{cellWidth:12,halign:"center",fontStyle:"bold"}}});after();
+ const sm=S.sum;const srows=t.summary==="LPC"?[["WEAKEST COMPETENCY",sm.weakest.cpt,sm.weakest.fo],["TRAINING DAY (A-G)",sm.trainingDay.cpt,sm.trainingDay.fo],["OUTCOME",sm.outcome.cpt,sm.outcome.fo]]:[["OPC OUTCOME",sm.outcome.cpt,sm.outcome.fo],["WEAKEST COMPETENCY",sm.weakest.cpt,sm.weakest.fo],["FAILED ITEMS",sm.failed.cpt,sm.failed.fo]];
+ doc.autoTable({...base,startY:y,head:[["",pt(pilotLabel("cpt")),pt(pilotLabel("fo"))]],body:srows.map(r=>r.map(x=>pt(x||""))),columnStyles:{0:{cellWidth:46,fontStyle:"bold",fillColor:soft}}});after();
+ doc.autoTable({...base,startY:y,head:[[{content:"ADMIN CHECKLIST",colSpan:2}]],body:t.admin.map((a,i)=>[S.admin["a"+i]?"[X]":"[  ]",pt(a)]),columnStyles:{0:{cellWidth:12,halign:"center",fontStyle:"bold"}}});after();
+ doc.autoTable({...base,startY:y,head:[["GENERAL NOTES - "+pt(cptH),"GENERAL NOTES - "+pt(foH)]],body:[[pt(S.notes.cpt||""),pt(S.notes.fo||"")]],bodyStyles:{minCellHeight:18}});after();
+ if((S.notes.general||"").trim()){doc.autoTable({...base,startY:y,head:[["GENERAL NOTES (earlier version)"]],body:[[pt(S.notes.general)]]});after()}
+
+ // Evidence annex
+ if(ev.length){
+  doc.addPage();y=M;heading("Evidence annex",`  ${ev.length} photo${ev.length>1?"s":""}`);
+  const items=allItems();
+  for(const p of ev){
+   const it=items.find(i=>i.id===p.exId);
+   const data=await blobToDataURL(p.blob);
+   let iw=p.w||4,ih=p.h||3;const maxW=W-2*M,maxH=110;const sc=Math.min(maxW/iw,maxH/ih);const dw=iw*sc,dh=ih*sc;
+   if(y+dh+14>H-14){doc.addPage();y=M}
+   doc.setFont("helvetica","bold");doc.setFontSize(10);doc.setTextColor(...ink);
+   doc.text(pt(`${p.label}  ${it?(it.code?it.code+" ":"")+it.name:""}`),M,y+4);
+   if(p.caption){doc.setFont("helvetica","normal");doc.setFontSize(8.5);doc.setTextColor(...mut);doc.text(pt(p.caption),M,y+8.5,{maxWidth:maxW})}
+   y+=p.caption?11:7;
+   doc.addImage(data,"JPEG",M,y,dw,dh,undefined,"FAST");y+=dh+8;
+  }
+ }
+ // footer
+ const n=doc.getNumberOfPages();
+ for(let i=1;i<=n;i++){doc.setPage(i);doc.setFont("helvetica","normal");doc.setFontSize(7.5);doc.setTextColor(...mut);
+  doc.text(pt(`${t.session} | ${fmtDate(S.date)} | ${S.fstdCode||""}`),M,H-7);doc.text(`${i} / ${n}`,W-M,H-7,{align:"right"})}
+ return doc.output("blob");
+}
+
+function fmtD(d){return d?fmtDate(d):""}
+function pilotRows(inclPass){
+ const p=k=>S.pilots[k];const u=v=>v?"  |  UPDT: "+v:"";
+ return [["NAME",k=>p(k).name],["CREWCODE",k=>p(k).crewcode],["LICENSE No / TYPE",k=>p(k).license],
+  ["TR/IR VALIDITY",k=>fmtD(p(k).trir)+u(p(k).trirUpdt)],["MEDICAL EXPIRY",k=>fmtD(p(k).medical)+u(p(k).medicalUpdt)],
+  ...(inclPass?[["PASSPORT No",k=>p(k).passport]]:[]),["PASSPORT EXPIRY",k=>fmtD(p(k).passportExp)],
+  ["TECH EXAM",k=>p(k).techExam],["ELP",k=>(p(k).elp||"")+u(p(k).elpUpdt)],["ATTEMPT",k=>p(k).attempt],["OUTCOME",k=>p(k).outcome],["FAILED ITEMS",k=>p(k).failed]];
+}
+/* ---------------- Plain text ---------------- */
+function sessionText(){
+ const t=tpl();const L=[];const ev=evidenceList();const evBy={};ev.forEach(p=>{(evBy[p.exId]=evBy[p.exId]||[]).push(p.label)});
+ L.push(`${t.session} - Session notes`,`Date: ${fmtDate(S.date)} | FSTD: ${S.fstdCode||"?"} | Type: ${S.fstdType||"?"}${t.crew?" | Crew: "+S.crew:""} | Examiner: ${S.examiner||""}`,"");
+ ["cpt","fo"].forEach(k=>{L.push(`${pilotLabel(k)}: `+pilotRows(false).map(([l,f])=>`${l}: ${f(k)||"-"}`).join(" | "))});
+ for(const s of t.sections){L.push("",`== ${s.title} (${s.sub}) ==`);
+  for(const it of s.items){const e=S.ex[it.id];L.push(`- ${it.code?it.code+" ":""}${it.name}${it.pf?" | PF: "+it.pf:""}${it.cond?" | "+it.cond:""}${it.refs.length?" | "+it.refs.join(" "):""}${evBy[it.id]?" | Evidence: "+evBy[it.id].join(", "):""}`);
+   ["cpt","fo"].forEach(k=>{const x=e[k];L.push(`   ${pilotLabel(k)} [${x.role||"-"}]${x.comp?" COMP: "+x.comp:""}: ${(x.notes||"").trim().replace(/\n+/g," / ")||"-"}`)})}
+  if(s.repeats)L.push(`- REPEATS: ${S.repeats||"-"}`)}
+ L.push("","== Summary ==");COMPS.forEach(([c])=>{const g=S.grades[c];if(g.cpt||g.fo||g.obsCpt||g.obsFo)L.push(`${c}: ${pilotLabel("cpt")} ${g.cpt||"-"}${g.obsCpt?" ("+g.obsCpt+")":""} | ${pilotLabel("fo")} ${g.fo||"-"}${g.obsFo?" ("+g.obsFo+")":""}`)});
+ const sm=S.sum;L.push(`Weakest: ${sm.weakest.cpt||"-"} / ${sm.weakest.fo||"-"}`,`Outcome: ${sm.outcome.cpt||"-"} / ${sm.outcome.fo||"-"}`);
+ if(t.summary==="LPC")L.push(`Training day: ${sm.trainingDay.cpt||"-"} / ${sm.trainingDay.fo||"-"}`);else L.push(`Failed items: ${sm.failed.cpt||"-"} / ${sm.failed.fo||"-"}`);
+ L.push("","== General notes ==",`${pilotLabel("cpt")}: ${S.notes.cpt||"-"}`,`${pilotLabel("fo")}: ${S.notes.fo||"-"}`);if((S.notes.general||"").trim())L.push(`Earlier general notes: ${S.notes.general}`);
+ return L.join("\n");
+}
+async function copyText(btn){
+ const txt=sessionText();
+ try{await navigator.clipboard.writeText(txt);toast("Notes copied. Paste them into the chat.")}
+ catch(e){const m=$("#exportMsg");m.innerHTML=`<label class="field"><span class="lbl">Could not copy automatically: select the text and copy it</span><textarea id="copyArea" rows="10" readonly style="width:100%;font-family:var(--f-mono);font-size:12px">${h(txt)}</textarea></label>`;const a=$("#copyArea");a.focus();a.select()}
+}
+
+/* ---------------- Backup ---------------- */
+async function backup(btn){
+ btn.disabled=true;
+ try{
+  const ss=await DB.all("sessions");const ph=await DB.all("photos");
+  const photos=[];for(const p of ph){photos.push({...p,blob:await blobToDataURL(p.blob)})}
+  const data=JSON.stringify({app:"cuaderno-tre",v:1,exportedAt:new Date().toISOString(),sessions:ss,photos});
+  const r=await giveFile(`tre-notebook_backup_${today()}.json`,new Blob([data],{type:"application/json"}));
+  toast(r==="saved"?"Backup saved":r==="declined"?"Backup cancelled":"This view cannot save files");
+ }catch(e){toast("Could not create the backup")}
+ btn.disabled=false;
+}
+$("#importFile").addEventListener("change",async e=>{
+ const f=e.target.files&&e.target.files[0];e.target.value="";if(!f)return;
+ try{const d=JSON.parse(await f.text());if(d.app!=="cuaderno-tre")throw new Error("formato");
+  for(const s of d.sessions||[])await DB.put("sessions",s);
+  for(const p of d.photos||[]){const blob=await (await fetch(p.blob)).blob();await DB.put("photos",{...p,blob})}
+  toast(`Imported ${(d.sessions||[]).length} session${(d.sessions||[]).length===1?"":"s"}`);renderHome();
+ }catch(err){toast("That file is not a TRE Sim Notebook backup")}
+});
+
+/* ---------------- Install (standalone web app only) ---------------- */
+function isStandalone(){try{return navigator.standalone===true||matchMedia("(display-mode: standalone)").matches}catch(e){return false}}
+function installHint(){
+ if(window.claude||isStandalone())return "";
+ return `<div class="banner">To use it offline, add it to your Home Screen: tap <b>Share</b> then <b>Add to Home Screen</b>, and always open it from that icon.</div>`;
+}
+if(!window.claude&&"serviceWorker" in navigator&&(location.protocol==="https:"||location.hostname==="localhost")){
+ window.addEventListener("load",()=>{navigator.serviceWorker.register("./sw.js").catch(()=>{})});
+}
+/* ---------------- Boot ---------------- */
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden")saveNow()});
+(async function boot(){
+ await DB.open();
+ try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist()}catch(e){}
+ const last=lsGet("tre.last");
+ if(last){await openSession(last);if(!S)render()}else render();
+ getDownloads();
+})();
+</script>
+
+</body>
+</html>
