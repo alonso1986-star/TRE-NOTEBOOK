@@ -37,7 +37,10 @@
   --accent:#73AAE6; --accent-ink:#0D141B; --accent-soft:#1B2F45;
   --amber:#EFB04D; --amber-soft:#3A2B12; --pf:#5DC79B; --pf-soft:#163428; --bad:#FF8B80; --bad-soft:#3B1A18; color-scheme:dark}
 
-html,body{background:var(--bg);color:var(--ink)}
+html,body{background:var(--bg);color:var(--ink);height:100%;overflow:hidden}
+/* App shell: the shell follows the visible screen area (also when the iOS keyboard is open); only .scroller scrolls. */
+#app{position:fixed;left:0;right:0;top:0;height:var(--vvh,100%);transform:translateY(var(--vvt,0px));display:flex;flex-direction:column;background:var(--bg);z-index:1}
+.scroller{flex:1 1 auto;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;padding-bottom:env(safe-area-inset-bottom,0px)}
 body{font-family:var(--f-body);font-size:15px;line-height:1.45;-webkit-text-size-adjust:100%}
 *{box-sizing:border-box}
 button,input,textarea,select{font:inherit;color:inherit}
@@ -58,8 +61,7 @@ h1,h2,h3{font-family:var(--f-display);font-weight:700;letter-spacing:.01em;text-
 .btn:disabled{opacity:.5;cursor:default}
 
 /* header */
-body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--surface)}
-.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--surface);border-bottom:1px solid var(--line)}
+.top{flex:none;position:relative;z-index:5;background:var(--surface);border-bottom:1px solid var(--line);padding-top:env(safe-area-inset-top,0px);box-shadow:0 1px 6px rgba(10,20,30,.08)}
 .top-row{display:flex;align-items:center;gap:10px;min-height:56px;padding-block:6px}
 .top-title{flex:1;min-width:0}
 .top-title h1{font-size:22px;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -82,7 +84,7 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 @media (min-width:900px){.shell{grid-template-columns:230px minmax(0,1fr);align-items:start}}
 .nav{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin-inline:-4px;padding:2px 4px}
 .nav::-webkit-scrollbar{display:none}
-@media (min-width:900px){.nav{flex-direction:column;overflow:visible;position:sticky;top:calc(env(safe-area-inset-top,0px) + 120px)}}
+@media (min-width:900px){.nav{flex-direction:column;overflow:visible;position:sticky;top:16px}}
 .nav button{flex:none;text-align:left;border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:8px 12px;display:flex;justify-content:space-between;gap:10px;align-items:center;font-size:14px;font-weight:500}
 .nav button[aria-current="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
 .nav .cnt{font-family:var(--f-mono);font-size:11px;opacity:.75}
@@ -103,6 +105,8 @@ input[type=date]{min-height:42px}
 .pair{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 .pair>input,.pair>select{flex:1 1 140px;min-width:0}
 .pair .updt{display:flex;align-items:center;gap:6px;flex:none}
+.exp{font-size:12px;font-weight:600;color:var(--amber)}
+.exp.bad{color:var(--bad)}
 
 /* segmented */
 .seg{display:inline-flex;flex-wrap:wrap;gap:4px}
@@ -387,7 +391,7 @@ async function renderHome(){
   return `<div class="srow"><button class="open" data-open="${h(s.id)}"><span><span class="badge">${h(t.short)}</span><b>${h(fmtDate(s.date))}</b>${s.fstdCode?` <span class="muted">· ${h(s.fstdCode)}</span>`:""}${s.fstdType?` <span class="muted">· ${h(s.fstdType)}</span>`:""}</span><span class="names">${h(n)}</span></button><span data-delwrap="${h(s.id)}"><button class="btn small ghost" data-askdel="${h(s.id)}">Delete</button></span></div>`}).join("");
  app.innerHTML=`
  <header class="top"><div class="wrap top-row" style="max-width:900px;margin:0 auto"><div class="top-title"><h1>TRE Sim Notebook</h1><div class="sub">B737 · RST 3 and RST 4 templates</div></div></div></header>
- <div class="wrap"><div class="home">
+ <div class="scroller"><div class="wrap"><div class="home">
   ${DB.ok?"":`<div class="banner bad">This browser does not allow saving data here. Anything you type is lost when the page closes, so export the PDF before leaving.</div>`}
   ${installHint()}
   <section class="hero"><span class="lbl">New session</span></section>
@@ -402,7 +406,7 @@ async function renderHome(){
    <p class="muted" style="margin:0;font-size:14px">Sessions and photos live only on this device. Save a backup now and then, or use it to move sessions between iPhone and iPad.</p>
    <div class="foot"><button class="btn" data-act="backup" ${sessions.length?"":"disabled"}>Save backup (.json)</button><button class="btn" data-act="import">Import backup</button></div>
   </div>
- </div></div>`;
+ </div></div></div>`;
 }
 function fmtDate(d){if(!d)return "No date";const [y,m,dd]=d.split("-");return `${dd}/${m}/${y}`}
 
@@ -428,7 +432,7 @@ function renderSession(){
    <button class="btn small primary" data-sec="exportar">PDF</button></div>
   ${sec==="exportar"||sec==="setup"?"":`<div class="codes" aria-label="Note codes: tap to insert into the active field">${codes}</div>`}
  </div></header>
- <div class="wrap"><div class="shell"><nav class="nav" aria-label="Sections">${nav}</nav><main id="main">${renderSec()}</main></div></div>`;
+ <div class="scroller"><div class="wrap"><div class="shell"><nav class="nav" aria-label="Sections">${nav}</nav><main id="main">${renderSec()}</main></div></div></div>`;
  autosizeAll();
  const cur=app.querySelector('.nav [aria-current="true"]');if(cur&&cur.scrollIntoView&&innerWidth<900)cur.scrollIntoView({inline:"center",block:"nearest"});
 }
@@ -443,12 +447,12 @@ function ta(path,ph="",rows=3){return `<textarea id="f-${h(path)}" data-k="${h(p
 function renderSec(){
  const t=tpl();
  if(sec==="datos"){
-  const dateUpdt=(k,f,label)=>`<div class="field"><span class="lbl">${h(label)}</span><div class="pair"><input id="f-pilots.${k}.${f}" type="date" data-k="pilots.${k}.${f}" value="${h(S.pilots[k][f])}" aria-label="${h(label)}"><span class="updt"><span class="lbl">UPDT</span>${seg(`pilots.${k}.${f}Updt`,["YES","NO"])}</span></div></div>`;
+  const dateUpdt=(k,f,label)=>`<div class="field"><span class="lbl">${h(label)}</span><div class="pair"><input id="f-pilots.${k}.${f}" type="date" data-k="pilots.${k}.${f}" value="${h(S.pilots[k][f])}" aria-label="${h(label)}"><span class="updt"><span class="lbl">UPDT</span>${seg(`pilots.${k}.${f}Updt`,["YES","NO"])}</span></div>${expSpan(k,f)}</div>`;
   const elpSel=k=>{const v=S.pilots[k].elp;return `<div class="field"><span class="lbl">ELP</span><div class="pair"><select id="f-pilots.${k}.elp" data-k="pilots.${k}.elp" aria-label="ELP"><option value="" ${v?"":"selected"}>–</option>${["4","5","6"].map(x=>`<option value="${x}" ${v===x?"selected":""}>${x}</option>`).join("")}</select><span class="updt"><span class="lbl">UPDT</span>${seg(`pilots.${k}.elpUpdt`,["YES","NO"])}</span></div></div>`};
   const pilotCard=k=>`<div class="card" style="display:flex;flex-direction:column;gap:12px"><h3>Pilot · ${h(pilotLabel(k))}</h3>
    <div class="grid">${inp(`pilots.${k}.name`,"Name")}${inp(`pilots.${k}.crewcode`,"Crewcode",{caps:true})}${inp(`pilots.${k}.license`,"License No / Type",{caps:true})}</div>
    <div class="grid">${dateUpdt(k,"trir","TR/IR validity")}${dateUpdt(k,"medical","Medical expiry")}</div>
-   <div class="grid">${inp(`pilots.${k}.passport`,"Passport No",{caps:true})}${inp(`pilots.${k}.passportExp`,"Passport expiry",{type:"date"})}</div>
+   <div class="grid">${inp(`pilots.${k}.passport`,"Passport No",{caps:true})}<div class="field">${inp(`pilots.${k}.passportExp`,"Passport expiry",{type:"date"})}${expSpan(k,"passportExp")}</div></div>
    <div class="grid">${inp(`pilots.${k}.techExam`,"Tech exam")}${elpSel(k)}${segField(`pilots.${k}.attempt`,"Attempt",["1st","2nd"])}</div>
    <div class="grid">${segField(`pilots.${k}.outcome`,"Outcome",["PASS","PARTIAL PASS","FAIL"])}${inp(`pilots.${k}.failed`,"Failed items")}</div></div>`;
   return `<div class="sec-head"><h2>Session & pilots</h2>${t.timing?`<span class="sub mono">${h(t.timing)}</span>`:""}</div>
@@ -531,6 +535,7 @@ function issues(){
  ["cpt","fo"].forEach(k=>{const p=S.pilots[k],l=pilotLabel(k);
   if(!p.name.trim())out.push(`${l} name is missing.`);
   if(!p.elp)out.push(`${l} ELP is missing.`)});
+ expiryAlerts().forEach(a=>out.push(`${a.who}: ${a.what} ${a.text} (${fmtDate(a.date)}). Tell the crew member.`));
  const items=allItems();const empty=items.filter(i=>!filled(i.id));
  if(empty.length)out.push(`${empty.length} of ${items.length} exercises have no notes (they will print empty; write N/O if not done).`);
  const noRole=items.filter(i=>!S.ex[i.id].cpt.role&&!S.ex[i.id].fo.role&&filled(i.id));
@@ -557,6 +562,7 @@ app.addEventListener("input",e=>{
   if(el.tagName==="TEXTAREA")autosize(el);
   const card=el.closest(".ex");if(card){const id=card.id.slice(3);card.classList.toggle("has-notes",!!filled(id));updateNavCounts()}
   if(/^pilots\.|^date|^fstd/.test(el.dataset.k))updateHeaderSub();
+  if(/^date$|\.(trir|medical|passportExp)$/.test(el.dataset.k))refreshExp();
  }
 });
 app.addEventListener("change",async e=>{
@@ -570,11 +576,11 @@ app.addEventListener("pointerdown",e=>{if(e.target.closest("[data-ins]"))e.preve
 app.addEventListener("click",async e=>{
  const b=e.target.closest("button");if(!b)return;
  if(b.dataset.ins){insertCode(b.dataset.ins);return}
- if(b.dataset.new){S=newSession(b.dataset.new);P=[];sec="datos";await saveNow();lsSet("tre.last",S.id);render();scrollTo(0,0);return}
+ if(b.dataset.new){S=newSession(b.dataset.new);P=[];sec="datos";await saveNow();lsSet("tre.last",S.id);render();toTop();return}
  if(b.dataset.open){await openSession(b.dataset.open);return}
  if(b.dataset.askdel){const w=app.querySelector(`[data-delwrap="${CSS.escape(b.dataset.askdel)}"]`);w.innerHTML=`<span class="foot" style="gap:6px"><span class="muted" style="font-size:13px">Delete session and photos?</span><button class="btn small danger" data-del="${h(b.dataset.askdel)}">Delete</button><button class="btn small" data-act="home">Keep</button></span>`;return}
  if(b.dataset.del){await deleteSession(b.dataset.del);return}
- if(b.dataset.sec){sec=b.dataset.sec;await saveNow();renderSession();scrollTo(0,0);return}
+ if(b.dataset.sec){sec=b.dataset.sec;await saveNow();renderSession();toTop();return}
  if(b.dataset.photo){openPhoto(b.dataset.photo);return}
  const segEl=b.closest("[data-seg]");
  if(segEl&&b.dataset.val!==undefined){const path=segEl.dataset.seg;const cur=getP(S,path);const v=cur===b.dataset.val?"":b.dataset.val;setP(S,path,v);
@@ -582,7 +588,7 @@ app.addEventListener("click",async e=>{
   if(path==="crew"||path==="fstdType")renderSession();
   return}
  const act=b.dataset.act;
- if(act==="home"){await saveNow();S=null;P=[];lsSet("tre.last","");freeURLs();render();scrollTo(0,0)}
+ if(act==="home"){await saveNow();S=null;P=[];lsSet("tre.last","");freeURLs();render();toTop()}
  if(act==="pdf")exportPDF(b);
  if(act==="copy")copyText(b);
  if(act==="backup")backup(b);
@@ -607,7 +613,7 @@ function toast(msg){document.querySelectorAll(".toast").forEach(x=>x.remove());c
 
 async function openSession(id){
  const all=await DB.all("sessions");const s=all.find(x=>x.id===id);if(!s)return;
- S=normalize(s);P=(await DB.photosOf(id)).sort((a,b)=>a.createdAt-b.createdAt);sec="datos";lsSet("tre.last",id);renderSession();scrollTo(0,0);
+ S=normalize(s);P=(await DB.photosOf(id)).sort((a,b)=>a.createdAt-b.createdAt);sec="datos";lsSet("tre.last",id);renderSession();toTop();
 }
 async function deleteSession(id){
  const ph=await DB.photosOf(id);for(const p of ph)await DB.del("photos",p.id);
@@ -752,11 +758,23 @@ async function buildPDF(){
 }
 
 function fmtD(d){return d?fmtDate(d):""}
+const EXPIRY_DAYS=60;
+function expiry(d){ // alert if a validity/expiry date falls within 60 days of the session date
+ if(!d||!/^\d{4}-\d{2}-\d{2}$/.test(d))return null;
+ const ref=new Date((S.date||today())+"T00:00:00"),dt=new Date(d+"T00:00:00");
+ const days=Math.round((dt-ref)/86400000);
+ if(days<0)return {days,bad:true,text:`expired ${-days} day${days===-1?"":"s"} before the session`};
+ if(days<=EXPIRY_DAYS)return {days,bad:days<=14,text:days===0?"expires on the session day":`expires ${days} day${days===1?"":"s"} after the session`};
+ return null;
+}
+function expiryAlerts(){const out=[];["cpt","fo"].forEach(k=>[["trir","TR/IR validity"],["medical","Medical"],["passportExp","Passport"]].forEach(([f,w])=>{const a=expiry(S.pilots[k][f]);if(a)out.push({...a,who:`${pilotLabel(k)}${pilotName(k)?" "+pilotName(k):""}`,what:w,date:S.pilots[k][f]})}));return out}
+function expSpan(k,f){const a=expiry(S.pilots[k][f]);return `<span class="exp ${a&&a.bad?"bad":""}" data-exp="${k}.${f}">${a?"⚠ "+h(a.text[0].toUpperCase()+a.text.slice(1)):""}</span>`}
+function refreshExp(){app.querySelectorAll("[data-exp]").forEach(el=>{const [k,f]=el.dataset.exp.split(".");const a=expiry(S.pilots[k][f]);el.textContent=a?"⚠ "+a.text[0].toUpperCase()+a.text.slice(1):"";el.classList.toggle("bad",!!(a&&a.bad))})}
 function pilotRows(inclPass){
- const p=k=>S.pilots[k];const u=v=>v?"  |  UPDT: "+v:"";
+ const p=k=>S.pilots[k];const u=v=>v?"  |  UPDT: "+v:"";const x=(k,f)=>{const a=expiry(S.pilots[k][f]);return a?"  |  (!) "+a.text.toUpperCase():""};
  return [["NAME",k=>p(k).name],["CREWCODE",k=>p(k).crewcode],["LICENSE No / TYPE",k=>p(k).license],
-  ["TR/IR VALIDITY",k=>fmtD(p(k).trir)+u(p(k).trirUpdt)],["MEDICAL EXPIRY",k=>fmtD(p(k).medical)+u(p(k).medicalUpdt)],
-  ...(inclPass?[["PASSPORT No",k=>p(k).passport]]:[]),["PASSPORT EXPIRY",k=>fmtD(p(k).passportExp)],
+  ["TR/IR VALIDITY",k=>fmtD(p(k).trir)+u(p(k).trirUpdt)+x(k,"trir")],["MEDICAL EXPIRY",k=>fmtD(p(k).medical)+u(p(k).medicalUpdt)+x(k,"medical")],
+  ...(inclPass?[["PASSPORT No",k=>p(k).passport]]:[]),["PASSPORT EXPIRY",k=>fmtD(p(k).passportExp)+x(k,"passportExp")],
   ["TECH EXAM",k=>p(k).techExam],["ELP",k=>(p(k).elp||"")+u(p(k).elpUpdt)],["ATTEMPT",k=>p(k).attempt],["OUTCOME",k=>p(k).outcome],["FAILED ITEMS",k=>p(k).failed]];
 }
 /* ---------------- Plain text ---------------- */
@@ -801,6 +819,14 @@ $("#importFile").addEventListener("change",async e=>{
  }catch(err){toast("That file is not a TRE Sim Notebook backup")}
 });
 
+/* ---------------- Viewport (keeps the header visible when the iOS keyboard is open) ---------------- */
+function toTop(){const sc=app.querySelector(".scroller");if(sc)sc.scrollTop=0}
+(function(){const vv=window.visualViewport;if(!vv)return;
+ const fit=()=>{document.documentElement.style.setProperty("--vvh",vv.height+"px");document.documentElement.style.setProperty("--vvt",Math.max(0,vv.offsetTop)+"px")};
+ vv.addEventListener("resize",fit);vv.addEventListener("scroll",fit);fit();
+ // when an input gets focus, keep it in view inside the scroller rather than letting the page shift
+ document.addEventListener("focusin",e=>{if(e.target.matches("textarea,input,select"))setTimeout(()=>{fit();e.target.scrollIntoView({block:"nearest"})},300)});
+})();
 /* ---------------- Install (standalone web app only) ---------------- */
 function isStandalone(){try{return navigator.standalone===true||matchMedia("(display-mode: standalone)").matches}catch(e){return false}}
 function installHint(){

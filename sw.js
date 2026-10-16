@@ -1,5 +1,5 @@
 // TRE Sim Notebook service worker: keeps the app usable offline.
-const VERSION = "tre-notebook-v2";
+const VERSION = "tre-notebook-v4";
 const SHELL = ["./", "./index.html", "./manifest.webmanifest",
   "./jspdf.umd.min.js", "./jspdf.plugin.autotable.min.js",
   "./icon-192.png", "./icon-512.png", "./apple-touch-icon.png"];
