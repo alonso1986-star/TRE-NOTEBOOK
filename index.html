@@ -100,7 +100,16 @@ main{min-width:0;display:flex;flex-direction:column;gap:14px}
 .field input,.field textarea,.pilot textarea,.pilot input,.obs{width:100%;border:1px solid var(--line);background:var(--surface-2);border-radius:7px;padding:9px 10px;font-size:16px}
 textarea{resize:vertical;min-height:84px;line-height:1.45}
 textarea.obs{min-height:60px}
-input[type=date]{min-height:42px}
+.auto{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px;font-size:14px}
+.auto li{background:var(--surface-2);border-left:3px solid var(--line);border-radius:5px;padding:5px 8px;line-height:1.35}
+.auto li.pos{border-left-color:var(--pf)}
+.auto li.neg{border-left-color:var(--bad)}
+.auto .xr{font-family:var(--f-mono);font-size:12px;color:var(--accent);margin-right:6px}
+.tally{font-family:var(--f-mono);font-size:12px;color:var(--muted)}
+.field input,.field select{height:44px}
+input[type=date]{-webkit-appearance:none;appearance:none;display:block;min-width:0;max-width:100%;width:100%;line-height:1.2;text-align:left}
+input[type=date]::-webkit-date-and-time-value{text-align:left;margin:0}
+input[type=date]::-webkit-calendar-picker-indicator{margin:0}
 .field select{width:100%;border:1px solid var(--line);background:var(--surface-2);border-radius:7px;padding:9px 10px;font-size:16px;min-height:42px}
 .pair{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 .pair>input,.pair>select{flex:1 1 140px;min-width:0}
@@ -384,6 +393,7 @@ function render(){S?renderSession():renderHome()}
 
 function pilotLabel(k){if(k==="cpt")return S.crew==="CPT / CPT"?"CPT (LHS)":"CPT";return S.crew==="CPT / CPT"?"CPT (RHS)":"FO"}
 function pilotName(k){return (S.pilots[k].name||"").trim()}
+function firstName(k){return pilotName(k).split(/\s+/)[0]||""}
 
 async function renderHome(){
  sessions=(await DB.all("sessions")).sort((a,b)=>b.updatedAt-a.updatedAt);
@@ -477,7 +487,8 @@ function renderSec(){
  }
  if(sec==="resumen"){
   const pc=(c,k,ok)=>`<div class="pcell"><div class="ph"><span class="lbl">${h(pilotLabel(k))}${pilotName(k)?" · "+h(pilotName(k)):""}</span>${seg(`grades.${c}.${k}`,["1","2","3","4","5"],"grade")}</div>
-    <textarea class="obs" id="f-grades.${h(c)}.${ok}" data-k="grades.${h(c)}.${ok}" rows="2" placeholder="Key observations">${h(S.grades[c][ok]||"")}</textarea></div>`;
+    ${autoList(c,k)}<textarea class="obs" id="f-grades.${h(c)}.${ok}" data-k="grades.${h(c)}.${ok}" rows="2" placeholder="Key observations">${h(S.grades[c][ok]||"")}</textarea></div>`;
+  TG={cpt:tagged("cpt"),fo:tagged("fo")};
   const rows=COMPS.map(([c,n])=>`<div class="grow"><div class="cname"><b>${h(c)}</b><span>${h(n)}</span></div>${pc(c,"cpt","obsCpt")}${pc(c,"fo","obsFo")}</div>`).join("");
   const kv=(label,inner)=>`<div class="kv"><span class="lbl" style="padding-top:8px">${label}</span>${inner("cpt")}${inner("fo")}</div>`;
   const plab=k=>`<span class="lbl">${h(pilotLabel(k))}</span>`;
@@ -492,7 +503,7 @@ function renderSec(){
     kv("Weakest competency",k=>`<div class="field">${plab(k)}${seg(`sum.weakest.${k}`,COMPS.map(c=>c[0]))}</div>`)+
     kv("Failed items",k=>`<label class="field">${plab(k)}<input id="f-sum.failed.${k}" data-k="sum.failed.${k}" value="${h(S.sum.failed[k])}"></label>`);
   }
-  return `<div class="sec-head"><h2>Summary</h2><span class="sub">Grades 1–5 (FEG 5.11) · optional: leave blank to have them proposed in the analysis</span></div>
+  return `<div class="sec-head"><h2>Summary</h2><span class="sub">Grades 1–5 (FEG 5.11) · exercise notes tagged with a competency (AOP, K, FPM-M…) appear here automatically</span></div>
   <div class="card"><div class="gtable">${rows}</div></div>
   <div class="card">${extra}</div>
   ${t.summary==="LPC"?`<p class="muted" style="font-size:12px;margin:0">* Day F only in -8200 sims. Partial Pass: ≤5 items failed; Fail: &gt;5 items or criteria met (FEG 5.8.9). Assign in EFOS "Training Scenario".</p>`:""}
@@ -513,8 +524,7 @@ function notesCard(){
 
 function exCard(it){
  const e=S.ex[it.id];const ph=P.filter(p=>p.exId===it.id);
- const panel=k=>`<div class="pilot"><div class="pilot-top"><span class="who"><b>${h(pilotLabel(k))}</b>${h(pilotName(k)||"—")}</span>${seg(`ex.${it.id}.${k}.role`,["PF","PM"],"role")}</div>
-   <div class="comp-row"><span class="lbl">Comp</span><input id="f-ex.${h(it.id)}.${k}.comp" data-k="ex.${h(it.id)}.${k}.comp" value="${h(e[k].comp)}" placeholder="e.g. FPM-M, SA" autocapitalize="characters" autocomplete="off"></div>
+ const panel=k=>`<div class="pilot"><div class="pilot-top"><span class="who"><b>${h(pilotLabel(k))}</b>${h(firstName(k)||"—")}</span>${seg(`ex.${it.id}.${k}.role`,["PF","PM"],"role")}</div>
    ${ta(`ex.${it.id}.${k}.notes`,"Notes",3)}</div>`;
  return `<article class="card ex ${filled(it.id)?"has-notes":""}" id="ex-${h(it.id)}">
   <div class="ex-head">${it.code?`<span class="ex-code">${h(it.code)}</span>`:""}<span class="ex-name">${h(it.name)}</span></div>
@@ -727,7 +737,7 @@ async function buildPDF(){
  }
 
  heading("Summary & closing","  Grades 1-5 (FEG 5.11)");
- doc.autoTable({...base,startY:y,head:[["COMPETENCY",pt(pilotLabel("cpt")),"KEY OBSERVATIONS - "+pt(pilotLabel("cpt")),pt(pilotLabel("fo")),"KEY OBSERVATIONS - "+pt(pilotLabel("fo"))]],body:COMPS.map(([c,n])=>[`${c} - ${n}`,S.grades[c].cpt||"",pt(S.grades[c].obsCpt),S.grades[c].fo||"",pt(S.grades[c].obsFo)]),columnStyles:{0:{cellWidth:38,fontStyle:"bold"},1:{cellWidth:12,halign:"center",fontStyle:"bold"},3:{cellWidth:12,halign:"center",fontStyle:"bold"}}});after();
+ doc.autoTable({...base,startY:y,head:[["COMPETENCY",pt(pilotLabel("cpt")),"KEY OBSERVATIONS - "+pt(pilotLabel("cpt")),pt(pilotLabel("fo")),"KEY OBSERVATIONS - "+pt(pilotLabel("fo"))]],body:(TG={cpt:tagged("cpt"),fo:tagged("fo")},COMPS.map(([c,n])=>[`${c} - ${n}`,S.grades[c].cpt||"",pt(obsText(c,"cpt")),S.grades[c].fo||"",pt(obsText(c,"fo"))])),columnStyles:{0:{cellWidth:38,fontStyle:"bold"},1:{cellWidth:12,halign:"center",fontStyle:"bold"},3:{cellWidth:12,halign:"center",fontStyle:"bold"}}});after();
  const sm=S.sum;const srows=t.summary==="LPC"?[["WEAKEST COMPETENCY",sm.weakest.cpt,sm.weakest.fo],["TRAINING DAY (A-G)",sm.trainingDay.cpt,sm.trainingDay.fo],["OUTCOME",sm.outcome.cpt,sm.outcome.fo]]:[["OPC OUTCOME",sm.outcome.cpt,sm.outcome.fo],["WEAKEST COMPETENCY",sm.weakest.cpt,sm.weakest.fo],["FAILED ITEMS",sm.failed.cpt,sm.failed.fo]];
  doc.autoTable({...base,startY:y,head:[["",pt(pilotLabel("cpt")),pt(pilotLabel("fo"))]],body:srows.map(r=>r.map(x=>pt(x||""))),columnStyles:{0:{cellWidth:46,fontStyle:"bold",fillColor:soft}}});after();
  doc.autoTable({...base,startY:y,head:[[{content:"ADMIN CHECKLIST",colSpan:2}]],body:t.admin.map((a,i)=>[S.admin["a"+i]?"[X]":"[  ]",pt(a)]),columnStyles:{0:{cellWidth:12,halign:"center",fontStyle:"bold"}}});after();
@@ -758,6 +768,29 @@ async function buildPDF(){
 }
 
 function fmtD(d){return d?fmtDate(d):""}
+/* Competency tags in exercise notes: each line tagged with AOP, K/KNO, FPM-A, FPM-M, COM, L&T, PSDM, SA or WLM
+   is shown under that competency for that pilot in the Summary, and printed with its exercise reference. */
+const TAGMAP={AOP:"AOP",APP:"AOP",K:"KNO",KNO:"KNO","FPM-A":"FPM-A","FPM-M":"FPM-M",COM:"COM","L&T":"L&T",PSDM:"PSDM",SA:"SA",WLM:"WLM"};
+const TAG_RE=/(^|[\s,;(\/])(FPM-A|FPM-M|L&T|PSDM|AOP|APP|KNO|COM|WLM|SA|K)(?=$|[\s,.;:)\/])/g;
+let TG={cpt:{},fo:{}};
+function tagged(k){
+ const out={};COMPS.forEach(([c])=>out[c]=[]);
+ allItems().forEach(it=>{
+  const e=S.ex[it.id];if(!e)return;
+  (e[k].notes||"").split(/\n+/).forEach(line=>{
+   const tags=new Set();line.replace(TAG_RE,(m,pre,t)=>{tags.add(TAGMAP[t]);return m});
+   if(!tags.size)return;
+   const text=line.replace(TAG_RE,"$1").replace(/\(\s*\)/g,"").replace(/\s{2,}/g," ").replace(/[\s,;:\/]+$/,"").trim();
+   if(!text)return;
+   tags.forEach(c=>out[c].push({ex:it.code||it.name,text,sign:/^\+/.test(text)?"pos":/^-(?!>)/.test(text)?"neg":""}));
+  });
+ });
+ return out;
+}
+function autoList(c,k){const a=(TG[k]&&TG[k][c])||[];if(!a.length)return "";
+ const pos=a.filter(x=>x.sign==="pos").length,neg=a.filter(x=>x.sign==="neg").length;
+ return `<span class="tally">From exercises · ${pos}+ ${neg}-</span><ul class="auto">${a.map(x=>`<li class="${x.sign}"><span class="xr">${h(x.ex)}</span>${h(x.text)}</li>`).join("")}</ul>`}
+function obsText(c,k){const a=((TG[k]&&TG[k][c])||[]).map(x=>`${x.ex}: ${x.text}`);const m=(S.grades[c][k==="cpt"?"obsCpt":"obsFo"]||"").trim();if(m)a.push(m);return a.join("\n")}
 const EXPIRY_DAYS=60;
 function expiry(d){ // alert if a validity/expiry date falls within 60 days of the session date
  if(!d||!/^\d{4}-\d{2}-\d{2}$/.test(d))return null;
@@ -786,7 +819,7 @@ function sessionText(){
   for(const it of s.items){const e=S.ex[it.id];L.push(`- ${it.code?it.code+" ":""}${it.name}${it.pf?" | PF: "+it.pf:""}${it.cond?" | "+it.cond:""}${it.refs.length?" | "+it.refs.join(" "):""}${evBy[it.id]?" | Evidence: "+evBy[it.id].join(", "):""}`);
    ["cpt","fo"].forEach(k=>{const x=e[k];L.push(`   ${pilotLabel(k)} [${x.role||"-"}]${x.comp?" COMP: "+x.comp:""}: ${(x.notes||"").trim().replace(/\n+/g," / ")||"-"}`)})}
   if(s.repeats)L.push(`- REPEATS: ${S.repeats||"-"}`)}
- L.push("","== Summary ==");COMPS.forEach(([c])=>{const g=S.grades[c];if(g.cpt||g.fo||g.obsCpt||g.obsFo)L.push(`${c}: ${pilotLabel("cpt")} ${g.cpt||"-"}${g.obsCpt?" ("+g.obsCpt+")":""} | ${pilotLabel("fo")} ${g.fo||"-"}${g.obsFo?" ("+g.obsFo+")":""}`)});
+ L.push("","== Summary ==");TG={cpt:tagged("cpt"),fo:tagged("fo")};COMPS.forEach(([c])=>{const g=S.grades[c];const oc=obsText(c,"cpt").replace(/\n/g," / "),of=obsText(c,"fo").replace(/\n/g," / ");if(g.cpt||g.fo||oc||of)L.push(`${c}: ${pilotLabel("cpt")} ${g.cpt||"-"}${oc?" ("+oc+")":""} | ${pilotLabel("fo")} ${g.fo||"-"}${of?" ("+of+")":""}`)});
  const sm=S.sum;L.push(`Weakest: ${sm.weakest.cpt||"-"} / ${sm.weakest.fo||"-"}`,`Outcome: ${sm.outcome.cpt||"-"} / ${sm.outcome.fo||"-"}`);
  if(t.summary==="LPC")L.push(`Training day: ${sm.trainingDay.cpt||"-"} / ${sm.trainingDay.fo||"-"}`);else L.push(`Failed items: ${sm.failed.cpt||"-"} / ${sm.failed.fo||"-"}`);
  L.push("","== General notes ==",`${pilotLabel("cpt")}: ${S.notes.cpt||"-"}`,`${pilotLabel("fo")}: ${S.notes.fo||"-"}`);if((S.notes.general||"").trim())L.push(`Earlier general notes: ${S.notes.general}`);
