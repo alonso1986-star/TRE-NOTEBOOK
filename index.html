@@ -309,6 +309,7 @@ const T={
   ],
   repeatsNote:"Once, at end (FEG 5.8.10). Record in EFOS.",
   summary:"OPC",
+  parts:[{id:"resumen",nav:"OPC summary",title:"OPC summary",secs:["o1","o2"],gk:"grades"},{id:"resumenT",nav:"Training summary",title:"Training summary",secs:["t1","t2"],gk:"gradesT"}],
   admin:["EFOS completed and signed (OPC and training scenario recorded)","Debrief done: Result / Reason / Restrictions / Retraining / Retest (FEG 5.10.2)","Partial Pass / Fail: notify Crew Control and CI-SIM","Notes sent to standardsinstructors","3 T/O and landings FCL.060 achieved with training: annotate on form","Two Captains: LVO, RTO/EVAC and QRH reading done by each Captain in LHS","Weak competencies practised with remaining training time; indicators reviewed in debrief"],
   setup:[
    {title:"RST 3 OPC - Sim setup",ref:"Examiner Profiles RST 3 2026",rows:[
@@ -393,6 +394,7 @@ const $=sel=>document.querySelector(sel);
 function getP(o,path){return path.split(".").reduce((a,k)=>a==null?a:a[k],o)}
 function setP(o,path,v){const ks=path.split(".");let a=o;ks.slice(0,-1).forEach(k=>{if(a[k]==null||typeof a[k]!=="object")a[k]={};a=a[k]});a[ks.at(-1)]=v}
 function tpl(){return T[S.type]}
+function parts(t=tpl()){return t.parts||[{id:"resumen",nav:"Summary & notes",title:"Summary",secs:null,gk:"grades"}]}
 function allItems(t=tpl()){return t.sections.flatMap(s=>s.items.filter(i=>!i.done).map(i=>({...i,sec:s})))}
 function today(){const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
 function lsGet(k){try{return localStorage.getItem(k)}catch(e){return null}}
@@ -405,6 +407,7 @@ function newSession(type){
  t.sections.forEach(sc=>sc.items.forEach(it=>{s.ex[it.id]=exDefault(sc,it)}));
  if(type==="LPC")s.lpc3=true;
  COMPS.forEach(([c])=>s.grades[c]={cpt:"",fo:"",obsCpt:"",obsFo:""});
+ if(t.parts){s.gradesT={};COMPS.forEach(([c])=>s.gradesT[c]={cpt:"",fo:"",obsCpt:"",obsFo:""})}
  return s;
 }
 function exDefault(sc,it){
@@ -417,6 +420,7 @@ function normalize(s){ // upgrade sessions saved by earlier versions
  ["cpt","fo"].forEach(k=>{s.pilots[k]={...PILOT_BLANK,...s.pilots[k]}});
  COMPS.forEach(([c])=>{const g=s.grades[c]||(s.grades[c]={cpt:"",fo:""});if(g.obsCpt==null)g.obsCpt=g.obs||"";if(g.obsFo==null)g.obsFo=g.obs||"";delete g.obs});
  s.notes=s.notes||{};["cpt","fo"].forEach(k=>{if(s.notes[k]==null)s.notes[k]=""});
+ if(T[s.type].parts){s.gradesT=s.gradesT||{};COMPS.forEach(([c])=>{if(!s.gradesT[c])s.gradesT[c]={cpt:"",fo:"",obsCpt:"",obsFo:""}})}
  if(s.body==null)s.body="";if(!s.debrief)s.debrief={well:"",diff:""};if(!s.sum.improve)s.sum.improve={cpt:"",fo:""};if(!s.sum.indRev)s.sum.indRev={cpt:"",fo:""};if(!s.sum.weakest2)s.sum.weakest2={cpt:"",fo:""};
  if(s.trainingDay==null){const td=(s.sum&&s.sum.trainingDay)||{};s.trainingDay=td.cpt||td.fo||""}
  if(s.type==="LPC"&&!s.lpc3){ // sessions saved with one card per item: merge the item cards back into their exercise card
@@ -485,7 +489,7 @@ function navSections(){
  const t=tpl();const list=[["datos","Session & pilots"]];
  if(t.setup)list.push(["setup","Sim setup"]);
  t.sections.forEach(s=>list.push([s.id,s.nav,s]));
- list.push(["resumen","Summary & notes"],["cierre","Closing"]);
+ parts(t).forEach(p=>list.push([p.id,p.nav]));list.push(["cierre","Closing"]);
  return list;
 }
 function filled(id){const e=S.ex[id];return e&&((e.cpt.notes||"").trim()||(e.fo.notes||"").trim()||(e.cpt.comp||"").trim()||(e.fo.comp||"").trim()||e.cpt.result||e.fo.result)}
@@ -563,10 +567,11 @@ function renderSec(){
    s.items.map((it,i)=>(it.passfail&&(i===0||s.items[i-1].group!==it.group)?`<div class="grp"><div class="grp-head"><span class="ex-code">${h(it.gcode)}</span><h3>${h(it.name)}</h3></div>${it.gnote?`<div class="guide">${h(it.gnote)}</div>`:""}</div>`:"")+(it.pre||[]).map(x=>`<div class="hdr-row">${h(x)}</div>`).join("")+(it.done?doneCard(it):exCard(it))+(it.post||[]).map(x=>`<div class="hdr-row">${h(x)}</div>`).join("")).join("")+(t.chipnote&&s===t.sections[t.sections.length-1]?`<p class="muted" style="font-size:12px;margin:0">${h(t.chipnote)}</p>`:"")+
    (s.repeats?`<div class="card ex"><div class="ex-head"><span class="ex-name">REPEATS</span></div><div class="guide">${h(t.repeatsNote)}</div><label class="field"><span class="lbl">Item / Pilot / Result</span>${ta("repeats","e.g. F6 EFATO / FO / repeated -> PASS",3)}</label></div>`:"");
  }
- if(sec==="resumen"){
-  const pc=(c,k,ok)=>S.body===k?`<div class="pcell"><span class="lbl">${h(pilotLabel(k))}</span><span class="muted" style="font-size:13px">Not assessed</span></div>`:`<div class="pcell"><div class="ph"><span class="lbl">${h(pilotLabel(k))}${pilotName(k)?" · "+h(pilotName(k)):""}</span>${seg(`grades.${c}.${k}`,GRADES,"grade")}</div>
-    ${autoList(c,k)}<textarea class="obs" id="f-grades.${h(c)}.${ok}" data-k="grades.${h(c)}.${ok}" rows="2" placeholder="Key observations">${h(S.grades[c][ok]||"")}</textarea></div>`;
-  TG={cpt:tagged("cpt"),fo:tagged("fo")};
+ const part=parts(t).find(p=>p.id===sec);
+ if(part){const gk=part.gk;
+  const pc=(c,k,ok)=>S.body===k?`<div class="pcell"><span class="lbl">${h(pilotLabel(k))}</span><span class="muted" style="font-size:13px">Not assessed</span></div>`:`<div class="pcell"><div class="ph"><span class="lbl">${h(pilotLabel(k))}${pilotName(k)?" · "+h(pilotName(k)):""}</span>${seg(`${gk}.${c}.${k}`,GRADES,"grade")}</div>
+    ${autoList(c,k)}<textarea class="obs" id="f-${gk}.${h(c)}.${ok}" data-k="${gk}.${h(c)}.${ok}" rows="2" placeholder="Key observations">${h(S[gk][c][ok]||"")}</textarea></div>`;
+  TG={cpt:tagged("cpt",part.secs),fo:tagged("fo",part.secs)};
   const rows=COMPS.map(([c,n])=>`<div class="grow"><div class="cname"><b>${h(c)}</b><span>${h(n)}</span></div>${pc(c,"cpt","obsCpt")}${pc(c,"fo","obsFo")}</div>`).join("");
   const kv=(label,inner)=>`<div class="kv"><span class="lbl" style="padding-top:8px">${label}</span>${inner("cpt")}${inner("fo")}</div>`;
   const plab=k=>`<span class="lbl">${h(pilotLabel(k))}</span>`;
@@ -592,9 +597,9 @@ function renderSec(){
     kv("Weakest competency",k=>`<div class="field">${plab(k)}${seg(`sum.weakest.${k}`,COMPS.map(c=>c[0]))}</div>`)+
     kv("Failed items",k=>`<label class="field">${plab(k)}<input id="f-sum.failed.${k}" data-k="sum.failed.${k}" value="${h(S.sum.failed[k])}"></label>`);
   }
-  return `<div class="sec-head"><h2>Summary</h2><span class="sub">Grades 1 Excellent – 5 Improvement required (FEG 5.11) · exercise notes tagged with a competency (AOP, K, FPM-M…) appear here automatically</span></div>
+  return `<div class="sec-head"><h2>${h(part.title)}</h2><span class="sub">Grades 1 Excellent – 5 Improvement required (FEG 5.11) · exercise notes tagged with a competency (AOP, K, FPM-M…) appear here automatically</span></div>
   <div class="card"><div class="gtable">${rows}</div></div>
-  <div class="card">${extra}</div>
+  ${extra&&part.id==="resumen"?`<div class="card">${extra}</div>`:""}
   ${t.summary==="LPC"?`<p class="muted" style="font-size:12px;margin:0">* Day F only in -8200 sims. ** Examiner discretion: review the options so the desired pilot is PF; select based on the weaker candidate. Partial Pass: ≤5 items failed; Fail: &gt;5 items or criteria met (FEG 5.8.9). Assign in EFOS "Training Scenario".</p>`:""}
   ${exportCard()}`;
  }
@@ -839,8 +844,8 @@ async function buildPDF(){
   if(s.repeats){doc.autoTable({...base,startY:y,body:[["REPEATS\n"+pt(t.repeatsNote),pt(S.repeats||"")]],columnStyles:{0:{cellWidth:46,fontStyle:"bold"}}});after()}
  }
 
- heading("Summary & closing","  Grades 1-5 (FEG 5.11)");
- doc.autoTable({...base,startY:y,head:[["COMPETENCY",pt(pilotLabel("cpt")),"KEY OBSERVATIONS - "+pt(pilotLabel("cpt")),pt(pilotLabel("fo")),"KEY OBSERVATIONS - "+pt(pilotLabel("fo"))]],body:(TG={cpt:tagged("cpt"),fo:tagged("fo")},COMPS.map(([c,n])=>[`${c} - ${n}`,GRADE_WORD[S.grades[c].cpt]||"",pt(obsText(c,"cpt")),GRADE_WORD[S.grades[c].fo]||"",pt(obsText(c,"fo"))])),columnStyles:{0:{cellWidth:34,fontStyle:"bold"},1:{cellWidth:18,halign:"center",fontStyle:"bold"},3:{cellWidth:18,halign:"center",fontStyle:"bold"}}});after();
+ for(const part of parts(t)){heading(parts(t).length>1?part.title:"Summary & closing","  Grades 1-5 (FEG 5.11)");
+ doc.autoTable({...base,startY:y,head:[["COMPETENCY",pt(pilotLabel("cpt")),"KEY OBSERVATIONS - "+pt(pilotLabel("cpt")),pt(pilotLabel("fo")),"KEY OBSERVATIONS - "+pt(pilotLabel("fo"))]],body:(TG={cpt:tagged("cpt",part.secs),fo:tagged("fo",part.secs)},COMPS.map(([c,n])=>[`${c} - ${n}`,GRADE_WORD[S[part.gk][c].cpt]||"",pt(obsText(c,"cpt",part.gk)),GRADE_WORD[S[part.gk][c].fo]||"",pt(obsText(c,"fo",part.gk))])),columnStyles:{0:{cellWidth:34,fontStyle:"bold"},1:{cellWidth:18,halign:"center",fontStyle:"bold"},3:{cellWidth:18,halign:"center",fontStyle:"bold"}}});after();}
  const sm=S.sum;const wk=k=>S.body===k?"Body":(sm.weakest[k]||"")+(S.body&&sm.weakest2&&sm.weakest2[k]?"  (2nd: "+sm.weakest2[k]+")":"");
  const yn=(o,k)=>S.body===k?"Body":(o[k]||"");
  const srows=t.summary==="TRN"?[["WEAKEST COMPETENCY (LPC)",wk("cpt"),wk("fo")],["IMPROVEMENT OBSERVED",yn(sm.improve,"cpt"),yn(sm.improve,"fo")],["TRE INDICATORS REVIEWED",yn(sm.indRev,"cpt"),yn(sm.indRev,"fo")]]:t.summary==="LPC"?[["WEAKEST COMPETENCY",wk("cpt"),wk("fo")],["TRAINING DAY (A-G)",{content:S.trainingDay||"",colSpan:2}],["OUTCOME",S.body==="cpt"?"Body":sm.outcome.cpt,S.body==="fo"?"Body":sm.outcome.fo]]:[["OPC OUTCOME",sm.outcome.cpt,sm.outcome.fo],["WEAKEST COMPETENCY",sm.weakest.cpt,sm.weakest.fo],["FAILED ITEMS",sm.failed.cpt,sm.failed.fo]];
@@ -879,9 +884,9 @@ function fmtD(d){return d?fmtDate(d):""}
 const TAGMAP={AOP:"AOP",APP:"AOP",K:"KNO",KNO:"KNO","FPM-A":"FPM-A","FPM-M":"FPM-M",COM:"COM","L&T":"L&T",PSDM:"PSDM",SA:"SA",WLM:"WLM"};
 const TAG_RE=/(^|[\s,;(\/])(FPM-A|FPM-M|L&T|PSDM|AOP|APP|KNO|COM|WLM|SA|K)(?=$|[\s,.;:)\/])/g;
 let TG={cpt:{},fo:{}};
-function tagged(k){
+function tagged(k,secs){
  const out={};COMPS.forEach(([c])=>out[c]=[]);
- allItems().forEach(it=>{
+ allItems().forEach(it=>{if(secs&&!secs.includes(it.sec.id))return;
   const e=S.ex[it.id];if(!e)return;
   (e[k].notes||"").split(/\n+/).forEach(line=>{
    const tags=new Set();line.replace(TAG_RE,(m,pre,t)=>{tags.add(TAGMAP[t]);return m});
@@ -896,7 +901,7 @@ function tagged(k){
 function autoList(c,k){const a=(TG[k]&&TG[k][c])||[];if(!a.length)return "";
  const pos=a.filter(x=>x.sign==="pos").length,neg=a.filter(x=>x.sign==="neg").length;
  return `<span class="tally">From exercises · ${pos}+ ${neg}-</span><ul class="auto">${a.map(x=>`<li class="${x.sign}"><span class="xr">${h(x.ex)}</span>${h(x.text)}</li>`).join("")}</ul>`}
-function obsText(c,k){const a=((TG[k]&&TG[k][c])||[]).map(x=>`${x.ex}: ${x.text}`);const m=(S.grades[c][k==="cpt"?"obsCpt":"obsFo"]||"").trim();if(m)a.push(m);return a.join("\n")}
+function obsText(c,k,gk="grades"){const a=((TG[k]&&TG[k][c])||[]).map(x=>`${x.ex}: ${x.text}`);const m=((S[gk]||S.grades)[c][k==="cpt"?"obsCpt":"obsFo"]||"").trim();if(m)a.push(m);return a.join("\n")}
 const EXPIRY_DAYS=60;
 function expiry(d){ // alert if a validity/expiry date falls within 60 days of the session date
  if(!d||!/^\d{4}-\d{2}-\d{2}$/.test(d))return null;
@@ -926,7 +931,7 @@ function sessionText(){
   for(const it of s.items){(it.pre||[]).forEach(x=>L.push(`  [${x}]`));if(it.done){L.push(`- ${it.code} ${it.name}: ${it.note||"Completed in the LOFT"}`);continue}const e=S.ex[it.id];L.push(`- ${it.code?it.code+" ":""}${it.name}${it.itemName?" ("+it.itemName+")":""}${it.pf?" | PF: "+it.pf:""}${it.cond?" | "+it.cond:""}${it.refs.length?" | "+it.refs.join(" "):""}${evBy[it.id]?" | Evidence: "+evBy[it.id].join(", "):""}`);
    ["cpt","fo"].forEach(k=>{const x=e[k];L.push(`   ${pilotLabel(k)} [${x.role||"-"}${x.result?" "+x.result:""}]${x.comp?" COMP: "+x.comp:""}: ${(x.notes||"").trim().replace(/\n+/g," / ")||"-"}`)})}
   if(s.repeats)L.push(`- REPEATS: ${S.repeats||"-"}`)}
- L.push("","== Summary ==");TG={cpt:tagged("cpt"),fo:tagged("fo")};COMPS.forEach(([c])=>{const g=S.grades[c];const oc=obsText(c,"cpt").replace(/\n/g," / "),of=obsText(c,"fo").replace(/\n/g," / ");if(g.cpt||g.fo||oc||of)L.push(`${c}: ${pilotLabel("cpt")} ${GRADE_WORD[g.cpt]||"-"}${oc?" ("+oc+")":""} | ${pilotLabel("fo")} ${GRADE_WORD[g.fo]||"-"}${of?" ("+of+")":""}`)});
+ for(const part of parts(t)){L.push("",`== ${part.title} ==`);TG={cpt:tagged("cpt",part.secs),fo:tagged("fo",part.secs)};COMPS.forEach(([c])=>{const g=S[part.gk][c];const oc=obsText(c,"cpt",part.gk).replace(/\n/g," / "),of=obsText(c,"fo",part.gk).replace(/\n/g," / ");if(g.cpt||g.fo||oc||of)L.push(`${c}: ${pilotLabel("cpt")} ${GRADE_WORD[g.cpt]||"-"}${oc?" ("+oc+")":""} | ${pilotLabel("fo")} ${GRADE_WORD[g.fo]||"-"}${of?" ("+of+")":""}`)});}
  const sm=S.sum;L.push(`Weakest: ${sm.weakest.cpt||"-"} / ${sm.weakest.fo||"-"}`,`Outcome: ${sm.outcome.cpt||"-"} / ${sm.outcome.fo||"-"}`);
  if(t.summary==="TRN")L.push(`Improvement observed: ${sm.improve.cpt||"-"} / ${sm.improve.fo||"-"}`,`TRE indicators reviewed: ${sm.indRev.cpt||"-"} / ${sm.indRev.fo||"-"}`,`Debrief - went well: ${S.debrief.well||"-"}`,`Debrief - differently: ${S.debrief.diff||"-"}`);else if(t.summary==="LPC")L.push(`Training day: ${S.trainingDay||"-"}`);else L.push(`Failed items: ${sm.failed.cpt||"-"} / ${sm.failed.fo||"-"}`);
  if((S.notes.cpt||"").trim()||(S.notes.fo||"").trim())L.push("","== General notes ==",`${pilotLabel("cpt")}: ${S.notes.cpt||"-"}`,`${pilotLabel("fo")}: ${S.notes.fo||"-"}`);if((S.notes.general||"").trim())L.push(`Earlier general notes: ${S.notes.general}`);
