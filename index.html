@@ -489,14 +489,39 @@ T.CULOFT={key:"CULOFT",cu:true,students:true,crew:false,short:"CU CRM LOFT",name
   {id:"l2",nav:"LOFT · Student 2",title:"LOFT · Student 2 in the LHS",sub:"Commander: Student 2",def:{cpt:"PM",fo:"PF"},loft:"l2",items:LOFT_PHASES("Q")},
   {id:"l3",nav:"Remaining time",title:"Remaining time",sub:"FPM-M, FPM-A and AOP: speedbrake retraction muscle memory, correct pitch and thrust",def:{},items:[
    I("R1","Windshear escape manoeuvre"),I("R2","Terrain escape manoeuvre"),I("R3","Approach to stall recovery"),I("R4","Go-arounds")]}]};
-T.CUCHK=JSON.parse(JSON.stringify(T.LPC));
-Object.assign(T.CUCHK,{key:"CUCHK",cu:true,students:true,noTD:true,short:"CU CHECK",name:"CU LPC/OPC or LST/OPC",session:"CU LPC/OPC",
- admin:["EFOS completed and signed","RST e-Learning completion certificate checked","Cat II, Cat IIIa and Monitored Approach recurrency form checked","RHS check completed by both candidates","LST/OPC: raw data ILS approach to landing completed","Debrief done: Result / Reason / Restrictions / Retraining / Retest (FEG 5.10.2)"]});
-T.CUCHK.sections.push({id:"cu",nav:"RHS check",title:"RHS check",sub:"Mandatory in all CU checks, from the RHS, in addition to the LHS check · as PM act as a competent F/O",def:{},items:[
- I("R1","RHS: take-off, engine failure at V1, profile to flaps up no lights"),
- I("R2","RHS: SE ILS approach to G/A"),
- I("R3","RHS: SE G/A profile to flaps up no lights"),
- I("R4","RHS: SE ILS to landing")]});
+const J=(code,name,refs,note)=>({id:code,code,name,refs,...(note?{note}:{})});
+T.CUCHK={key:"CUCHK",cu:true,students:true,noTD:true,crew:false,short:"CU CHECK",name:"CU LPC/OPC or LST/OPC",session:"CU LPC/OPC",summary:"LPC",
+ timing:"RST 4 2026 Examiner Profiles 4.0 · Command Upgrade · 4:40 + 30 min CU buffer · day scene · MAN–DUB",
+ repeatsNote:"Once, at the end of the check (FEG 5.8.10). A LOFT item can be repeated as a manoeuvre. Record in EFOS.",
+ admin:["EFOS completed and signed","RST e-Learning completion certificate checked","Cat II, Cat IIIa and Monitored Approach recurrency form checked","LVO, RTO, engine fire & evacuation, RHS check and QRH reading completed by each candidate in the LHS / RHS as required","LST/OPC: raw data ILS approach to landing completed","Debrief done: Result / Reason / Restrictions / Retraining / Retest (FEG 5.10.2)"],
+ sections:[
+  {id:"k1",nav:"LOFT 1",title:"First half · LOFT 1",sub:"Student 1 PF in the LHS · MAN–DUB · FEG 5.9.3",def:{cpt:"PF",fo:"PM"},items:[
+   J("A1","LOFT 1 – Initial: 125 m take-off, window overheat",["1.4","1.6","SPA.LVO","3.4.7"],"Transit setup on stand 54 MAN; taxi G4 to M1 RW23R. WINDOW OVHT at 110 kt: continue, QRH once the flight path is under control at a safe height. If rejected: reposition for a normal 125 m take-off with the failure after the After Take-off Checklist; repeat at the end (FEG 5.8.10). A fail is recorded on the 125 m take-off (SPA.LVO)."),
+   J("A2","LOFT 1 – Scenario: disruptive passenger",[],"PAA from the No 1: physically abusive passenger, now subdued; minor injuries. Threat level 2 to ATC (OMA 10.1.7, FEG 5.8.3.2). Not a fail unless the decision is unsafe; routing continues to DUB."),
+   J("A3","LOFT 1 – Approach: CAT III RW28L",["3.8.1","6.2","6.3","6.4"],"RVR 175 m. Visibility 0/0, G/A at DH with A/P failure at DH, then CAT III landing in 175 m. Randomise the order of landing and G/A.")]},
+  {id:"k2",nav:"S1 manoeuvres",title:"First half · Student 1 manoeuvres",sub:"Student 1 PF in the LHS · EIDW RW28L · FEG 5.9.4",def:{cpt:"PF",fo:"PM"},items:[
+   J("A4","Windshear on approach",["3.4.2","3.4.5","3.6.5","SPA.LVO"],"6 nm final ILS 28L, light windshear at 1200 ft AGL. Escape manoeuvre and recovery; at the MAA insert FLT CTL LOW PRESSURE or FEEL DIFF; complete when the QRH NNC is actioned."),
+   J("A5","Engine fire & severe damage at V1 · SE ILS G/A and landing",["2.5.2","3.8.3.4","4.4","5.5"],"Take-off 28L in 550 m. Reconfigure once level at or above MSA with the A/P engaged. Review the G/A instructions on the OEI landing checklist. LOC intercepted manually (3.8.3.4). 0/0 G/A, then landing in 3000 m OVC004."),
+   J("A6","2D RNP RW28L using V/S · engine fire on the ground",["3.6.7","3.8.4"],"Reposition PIZSA; no over-briefing (FEG 5.8.3). Unextinguishable engine fire during the roll-out (< 60 kt): On Ground Emergency and Engine Fire on the Ground NNC."),
+   J("A7","Passenger evacuation",["3.6.8"],"Evacuation for the unextinguishable engine fire."),
+   J("A8","125 m RTO",["6.1"],"Engine severe damage < V1. Take the RTO management to its full conclusion: stand, brake cooling, evacuation or further take-off.")]},
+  {id:"k3",nav:"LOFT 2",title:"Second half · LOFT 2",sub:"Student 2 PF in the LHS · threshold RW23R MAN · FEG 5.9.3",def:{cpt:"PM",fo:"PF"},items:[
+   J("B1","LOFT 2 – Initial: EFATO",["2.5.2","SPA.LVO"],"Visibility temporarily improved to 550 m. 8200: ATRT removed, TO-2. Engine failure at V1; when the crew requests weather, the RVR has dropped to 300 m."),
+   J("B2","LOFT 2 – Scenario: decision making",[],"Weather poor in the UK: structured decision to continue to Ireland. Diversion to the take-off alternate SNN is a PASS if structured and safe; the approach is then completed in DUB."),
+   J("B3","LOFT 2 – Approach: SE ILS RW28L flown manually",["3.8.3.4","4.4","5.5"],"Candidate disconnects the A/P and flies manually. 0/0 G/A at DA, then landing in the scenario weather. Randomise the order of landing and G/A.")]},
+  {id:"k4",nav:"S2 manoeuvres",title:"Second half · Student 2 manoeuvres",sub:"Student 2 PF in the LHS · EIDW RW28L · FEG 5.9.4",def:{cpt:"PM",fo:"PF"},items:[
+   J("B4","LVO sequence: 125 m take-off · CAT III landing 175 m and 0/0 G/A",["3.4.2","6.2","6.3","6.4","SPA.LVO"],"A/P failure at DH on the G/A; random order; one approach F40 and one F30. After the G/A insert AUX PITOT fail. G/A at DH +50/-0 ft; touchdown during the G/A is not a fail unless tailstrike or unsafe handling."),
+   J("B5","Windshear on approach",["3.4.12","3.6.5"],"Light windshear at 1200 ft AGL; at the MAA insert AUTOBRAKE DISARM; complete when the QRH NNC is actioned."),
+   J("B6","2D RNP RW28L using V/S · engine fire on the ground",["3.6.1","3.8.4"],"Reposition PIZSA; no over-briefing. Unextinguishable engine fire during the roll-out (< 60 kt)."),
+   J("B7","Passenger evacuation",["3.6.8"]),
+   J("B8","125 m RTO",["6.1"],"Engine severe damage < V1. Take the RTO management to its full conclusion.")]},
+  {id:"k5",nav:"RHS check",title:"RHS check · both candidates",sub:"OPC – RHS · FEG 5.8.11 · as PM in the LHS, act as a competent F/O",def:{},items:[
+   J("C2","RHS: EFATO · SE ILS 0/0 G/A · SE ILS landing",["OPC-RHS"],"Take-off 28L 550 m OVC002, engine failure at V1. No briefing required; reposition to 3 nm acceptable. Hdg ±10°, speed +10/-5 kt, G/A at DH(A) +50/-0 ft."),
+   J("C1","RHS: LVO RTO – Captain incapacitation < 80 kt",["OPC-RHS"],"125 m. Take the RTO management to its full conclusion.")]},
+  {id:"k6",nav:"Raw data ILS",title:"Raw data ILS · LST / as required",sub:"Only for ATPL / third country skills test (FEG 4.6)",def:{},repeats:true,items:[
+   J("D1","Raw data ILS RW28L to landing",["3.8.3.1"],"Reposition PIZSA or vectors to a 12 nm intercept, F5 2500 ft, A/P and A/T engaged. ±½ scale LOC and G/S. Early configuration is acceptable.")]}]};
+T.CUCHK.sections.find(sc=>sc.id==="k5").items.forEach((it,n)=>it.code="C"+(n+1)); // RHS shown in Examiner Profiles order (EFATO first); ids kept
+T.CUCHK.sections.filter(sc=>sc.id==="k3"||sc.id==="k4").forEach(sc=>sc.items.forEach(it=>it.swap=true)); // Student 2 panel on the left while PF in the LHS
 function loftPack(){try{return JSON.parse(localStorage.getItem("tre.cuLoftPack")||"null")}catch(e){return null}}
 function loftScenario(key){const pk=loftPack();const v=((S&&S.loft)||{})[key]||"";return pk&&v?pk.scenarios.find(x=>String(x.n)===String(v)):null}
 function loftCard(key){
@@ -800,7 +825,7 @@ function exCard(it){
   <div class="ex-head">${it.passfail?`<span class="ex-code">${h(it.item)}</span><span class="ex-name">${h(it.itemName||it.item)}</span>`:`${it.code?`<span class="ex-code">${h(it.code)}</span>`:""}<span class="ex-name">${h(it.name)}</span>`}</div>
   ${(it.pf||it.cond||it.refs.length)?`<div class="ex-meta">${it.pf?`<span class="lbl">PF</span><span class="cond">${h(it.pf)}</span>`:""}${it.cond?`<span class="cond">· ${h(it.cond)}</span>`:""}${it.refs.map(r=>`<span class="ref">${h(r)}</span>`).join("")}</div>`:""}
   ${it.note?`<div class="guide">${h(it.note)}</div>`:""}
-  <div class="pilots">${panel("cpt")}${panel("fo")}</div>
+  <div class="pilots">${it.swap?panel("fo")+panel("cpt"):panel("cpt")+panel("fo")}</div>
   <div class="photos">${ph.map(p=>`<button class="thumb" data-photo="${h(p.id)}" aria-label="View photo"><img src="${photoURL(p)}" alt="Evidence ${h(it.code||it.name)}"></button>`).join("")}
    <label class="btn small addphoto">＋ Photo<input type="file" accept="image/*" data-addphoto="${h(it.id)}"></label></div>
  </article>`;
@@ -815,7 +840,7 @@ function issues(){
  if(!S.fstdType)out.push("FSTD type (-800 / -8200) is missing.");
  if(S.type==="LPC"&&!S.trainingDay)out.push("Training Day (A–G) not assigned.");
  cuGradeAlerts().forEach(x=>out.push(x));
- if(S.type==="CUCHK"&&S.cuKind==="LST/OPC"&&!filled("L16"))out.push("LST/OPC: the raw data ILS approach to landing has no notes.");
+ if(S.type==="CUCHK"&&S.cuKind==="LST/OPC"&&!filled("D1"))out.push("LST/OPC: the raw data ILS approach to landing has no notes.");
  if(S.type==="CULOFT")["l1","l2"].forEach((k,i)=>{if(!S.loft[k])out.push(`LOFT scenario not selected for Student ${i+1}.`)});
  ["cpt","fo"].forEach(k=>{const p=S.pilots[k],l=pilotLabel(k);
   if(!p.name.trim())out.push(`${l} name is missing.`);
