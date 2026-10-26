@@ -140,6 +140,14 @@ input[type=date]::-webkit-calendar-picker-indicator{margin:0}
 .ex.has-notes{border-left:3px solid var(--pf)}
 .ex.has-fail{border-left:3px solid var(--bad)}
 .hdr-row{font-family:var(--f-mono);font-size:12px;letter-spacing:.04em;color:var(--muted);padding:8px 2px 0;border-top:1px dashed var(--line)}
+.cu-days button{min-width:64px;font-size:16px;padding:0 10px}
+.seg.sdr button[data-val="S"][aria-pressed="true"]{background:var(--pf);border-color:var(--pf);color:var(--accent-ink)}
+.seg.sdr button[data-val="D"][aria-pressed="true"]{background:var(--amber);border-color:var(--amber);color:var(--accent-ink)}
+.seg.sdr button[data-val="R"][aria-pressed="true"]{background:var(--bad);border-color:var(--bad);color:var(--accent-ink)}
+.loft details{border-top:1px solid var(--line);padding-top:8px}
+.loft summary{cursor:pointer;font-weight:600;font-size:14px}
+.loft-txt{white-space:pre-wrap;font-size:13.5px;line-height:1.5;margin-top:6px;color:var(--ink)}
+.loft select{width:100%;border:1px solid var(--line);background:var(--surface-2);border-radius:7px;padding:9px 10px;font-size:16px;min-height:44px}
 .done-card{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;background:var(--surface-2);border-style:dashed;font-size:14px}
 .trn-days{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
 .trn-days button{min-height:40px;min-width:44px;border:1px solid var(--line);background:var(--surface-2);border-radius:7px;font-weight:700;font-family:var(--f-display);font-size:18px}
@@ -362,6 +370,159 @@ Object.entries(TRN_DATA).forEach(([day,d])=>{
   summary:"TRN",admin:d.admin,chipnote:"Competency chips are a suggested focus taken from the "+day+" notes; adapt to the weak areas assigned from the LPC."};
 });
 const isTRN=()=>S&&S.type.startsWith("TRN_");
+/* ---------------- Command Upgrade (CU Simulator Workbook rev 20, Flight Instructor Guide rev 1) ---------------- */
+const SDR=["S","D","R"];
+const I=(code,name,note,pre)=>({id:code,code,name,refs:[],...(note?{note}:{}),...(pre?{pre:[pre]}:{})});
+const CU_FLT2=[["Flight","FR3832 · RYR1AM · EGSS–EIDW · threshold RW22","FR004 · RYR73AC · EGSS–EIDW · threshold RW22"],["ATC","UTAVA1R departure, squawk 0102","UTAVA1R departure, squawk 0102"],["Performance","ZFW 55.2 t | FUEL 5.1 t | REG EI-SIM | LID by instructor","ZFW 60.2 t | FUEL 4.5 t | REG EI-MAX | LID by instructor"]];
+T.CU1={key:"CU1",cu:true,students:true,sdr:true,crew:false,short:"CU FFS 1",name:"Command Upgrade FFS 1",session:"CU FFS 1",summary:"CUFFS",
+ timing:"5 h per crew · Student 1 PF in the LHS, Student 2 after the break",crm:"",admin:[],
+ setup:[{title:"CU FFS 1 – Flight details",ref:"CU Simulator Workbook rev 20, p.18",rows:[
+  ["Flight","FR3831 · RYR1ZN · EIDW–EGSS · stand 315C","FR001 · RYR78LM · EIDW–EGSS · stand 315C"],
+  ["ATC","LIFFY 7A departure, squawk 2725, airborne 132.58","LIFFY 7A departure, squawk 2725, airborne 132.58"],
+  ["Performance (MTOW)","78 t: ZFW 59.1 | FUEL 19.3 | TRIP 13.0 | CG 18.9% | Trim 6.50 | FULL 26K | V 146/152/158 | MFRA 1744 ft | IC/EXT on in OPT","76.2 t: ZFW 63.0 | FUEL 14.3 | TRIP 11.0 | CG 18.1% | Trim 6.50 | TO | V 141/148/155 | MFRA 1717 ft | CI 6 | ISA +1 | RES 2.0"],
+  ["Performance (light)","53.5 t: ZFW 48.5 | FUEL 5.0 | LID by instructor","66.2 t: ZFW 62.0 | FUEL 4.3 | LID by instructor"],
+  ["Weather","DUB RWY28 320/15/10 8000 OVC010 15/09 1001 5/5/5","DUB RWY28L 320/15 8000 OVC010 15/09 1001 5/5/5"]]}],
+ sections:[
+  {id:"c1",nav:"Departure & return",title:"Departure & return",sub:"Transit setup, Flap 5 departure, operational return: VNAV NPA and circling",def:{},items:[
+   I("A1","Before start – through flight procedure (transit setup)","Seat, lighting and oxygen mask familiarisation; simulator vs Ryanair differences; emergency equipment, shut-off switches and exits."),
+   I("A2","Push back procedure"),I("A3","Taxi procedures"),I("A4","Before take-off"),
+   I("A5","Flap 5 departure, standard procedures","Correct rotation technique and rate (SSG). A/P per normal procedures; After Take-off Checklist."),
+   I("A6","SID"),
+   I("A7","Operational return to departure airfield","Instructor requests a return to DUB with routing for a VNAV NPA and circling. Student sets up and briefs using DALTA."),
+   I("A8","Radar vectors, VNAV NPA"),I("A9","Circle-to-land"),I("A10","Land")]},
+  {id:"c2",nav:"Flap 1 & engine failure",title:"Flap 1 & engine failure",sub:"Reposition RW28L at MTOW · performance calculated in the briefing",def:{},items:[
+   I("B1","Flap 1 bleeds-off take-off, X-wind 15 kt","Max take-off weight for conditions: performance, procedures, precautions and tailstrike avoidance. 8200 sim: brief the expected bleed light."),
+   I("B2","Engine flameout @ V1, engine failure profile","Complete the engine failure profile in full."),
+   I("B3","ATC / holding procedures"),
+   I("B4","Engine in-flight start procedure (unsuccessful)","Attempt if and when appropriate."),
+   I("B5","AFCS SE ILS approach"),
+   I("B6","SE go-around at minimums due no visual reference","Once the G/A is complete and the A/P re-engaged, the instructor repositions and restores all systems."),
+   I("B7","Radar vectors or reposition")]},
+  {id:"c3",nav:"LVO",title:"LVO",sub:"Two CAT III ILS RW28L · LVO take-off and RTO",def:{},items:[
+   I("C1","CAT III approach (15 kt crosswind)"),
+   I("C2","CAT III approach to GA due autopilot failure at 50 ft RA","Instructor sets weather 0/0 and fails the A/P at 50 ft RA."),
+   I("C3","CAT III approach to landing","Reposition to 6 nm final. Discuss Monitored Approach considerations."),
+   I("C4","Flap 5 take-off, RVR 125 m, LVO procedures"),
+   I("C5","Engine/APU or cargo fire > 80 kt"),
+   I("C6","RTO procedure and passenger evacuation drills","RTO, On Ground Emergency and Passenger Evacuation.")]},
+  {id:"c4",nav:"Visual & NRO",title:"Visual approaches & NRO",sub:"Visual approaches RW28L · Narrow Runway Operations & Short Field Landing module, 30 m runway (EGMC/SEN) · FIG 11.25",def:{},items:[
+   I("D1","Visual approach – instructor patter","Reposition downwind; patter the crew on visual approach procedures; visual approach to landing."),
+   I("D2","Visual approach to landing","Reposition downwind."),
+   I("D3","NRO: RTO at 60 kt (engine failure)",null,"NARROW RUNWAY OPERATIONS & SHORT FIELD LANDING MODULE"),
+   I("D4","NRO: RTO at > 80 kt","Performance in accordance with instructor notes."),
+   I("D5","NRO: take-off"),
+   I("D6","NRO: non-precision approach using VNAV (> 6 nm)","Flight freeze at 500 ft: visual differences and optical illusions of narrow runways and short fields; stabilised approach criteria, centreline tracking, approach and landing technique."),
+   I("D7","Narrow runway / short-field landing (max crosswind)"),
+   I("D8","Narrow runway / short-field landing (max tailwind)","Reposition to > 3 nm final. Repeat the exercises until the crew attains proficiency."),
+   I("D9","Taxi in & shutdown","After the last landing: taxi in and full shutdown. Student 2 starts after the break with engines running on the runway.")]}]};
+T.CU2={key:"CU2",cu:true,students:true,sdr:true,crew:false,short:"CU FFS 2",name:"Command Upgrade FFS 2",session:"CU FFS 2",summary:"CUFFS",base:true,
+ timing:"5 h per crew · UPRT without FD/A/T · recovery exercises in both seats",crm:"Monitoring and intervention, communication, workload management",
+ admin:["Restricted base airport recorded in the comments of the training record"],
+ setup:[{title:"CU FFS 2 – Flight details",ref:"CU Simulator Workbook rev 20, p.22",rows:[...CU_FLT2,["Weather","STN RWY22 250/15 8000 CAVOK 18/12 1003","STN RWY22 250/15 8000 CAVOK 18/12 1003"],["Restricted bases","ACE VOR RW21 · CIA VOR RW33 · PSA LOC RW04R circle RW22L · PSR LOC RW22 circle RW04","ACE VOR RW21 · CIA VOR RW33 · PSA LOC RW04R circle RW22L · PSR LOC RW22 circle RW04"]]}],
+ sections:[
+  {id:"c1",nav:"UPRT & handling",title:"UPRT & handling",sub:"No FD or A/T for UPRT · stall, nose-high and nose-low recoveries by both students from both seats",def:{},items:[
+   I("E1","No FD take-off, level off at 3000 ft","Focus on rotation rate and pitch; repeat as necessary. Level off with pitch and thrust; PM completes the After Take-off Checklist.","TAKE-OFF & CLIMB (instructor setup)"),
+   I("E2","Manoeuvre margins (PFD)"),
+   I("E3","Slow flight (F40 VREF)","Decelerate manually to VREF 40, configuring per the flap extension policy; PFD indications approaching the stall."),
+   I("E4","Approach to stall in take-off config","Both seats. SSG / FIG 11.5."),I("E5","Approach to stall in clean config","Both seats."),
+   I("E6","Steep turns (45° bank)",null,"FL100 · 250 kt"),
+   I("E7","Recovery from nose high upset","Both seats."),I("E8","Recovery from nose low upset","Both seats."),
+   I("E9","Manoeuvre margins (PFD)",null,"CRUISE (FMC OPT altitude)"),
+   I("E10","Engine acceleration"),I("E11","Mach buffet","Overspeed recovery using partial speedbrake."),I("E12","Aeroplane stability"),
+   I("E13","Approach to stall indications"),I("E14","Approach to stall recovery (with and without stick shaker)","Both seats."),
+   I("E15","Severe turbulence penetration","Instructor patters the actions and procedures.")]},
+  {id:"c2",nav:"Descent & approaches",title:"Descent & approaches",sub:"Return to STN",def:{},items:[
+   I("F1","Effect of G-load on minimum and maximum speed bars",null,"DESCENT (once per crew)"),
+   I("F2","Exchange of energy (kinetic vs potential vs chemical)"),
+   I("F3","TCAS RA"),
+   I("F4","Visual approach with windshear on approach","Set up and brief, double brief per DALTA and NP.21.100. Windshear escape, then the missed approach agreed with ATC.","APPROACH"),
+   I("F5","Go-around from F5, MAA −1000 ft, using reduced GA thrust","Discontinued Approach Procedure: prioritise flight path management, avoid a level bust, keep speed for the configuration. No orbits inside 10 nm / below MSA or 3000 ft with gear down, flaps > 10 or in IMC."),
+   I("F6","Approach to stall in landing config","6 nm final; recovery per QRH MAN. Both seats."),
+   I("F7","Landing max crosswind"),
+   I("F8","Take-off max crosswind","Tailstrike avoidance and correct rotation rate; repeat as necessary."),
+   I("F9","Windshear on take-off recovery","Windshear Escape Manoeuvre per QRH MAN.")]},
+  {id:"c3",nav:"Restricted home base",title:"Restricted home base",sub:"NIGHT visuals · circle flown by the LHS pilot · FIG 11.33",def:{},items:[
+   I("G1","Non-precision approach"),I("G2","Circle-to-land or restricted approach"),I("G3","Go-around from base leg"),
+   I("G4","Non-precision approach"),I("G5","Circle-to-land or restricted approach"),I("G6","Go-around after touchdown"),
+   I("G7","Non-precision approach"),I("G8","Circle-to-land or restricted approach"),
+   I("G9","Land","Student 2 starts after the break with engines running on the runway at STN.")]}]};
+const TS="FIG 11.40: 1) long landing – G/A after touchdown; 2) bounced landing with automatic speedbrake – G/A; 3) shallow bounce – landing.";
+const T180="45 m wide runway. Not an FCILT sign-off in CU line training; refer to FCTM.";
+T.CU3={key:"CU3",cu:true,students:true,sdr:true,crew:false,short:"CU FFS 3",name:"Command Upgrade FFS 3",session:"CU FFS 3",summary:"CUFFS",
+ timing:"5 h per crew · TRE only · LOS at an airport chosen by the instructor",crm:"Shared situation awareness and information processing, workload management, communication inside and outside the cockpit",
+ admin:["CRM module 'Decision Making and Actions' (Objective 5) facilitated before the session","CU Day 3 Pre Sim Briefing – Air Systems conducted"],
+ setup:[{title:"CU FFS 3 – Flight details",ref:"CU Simulator Workbook rev 20, p.27",rows:[["Flight","FR3832 · RYR1AM · EGSS–EIDW · stand J45L","FR004 · RYR73AC · EGSS–EIDW · threshold RW22"],CU_FLT2[1],CU_FLT2[2],["Weather","Instructor alters the weather to suit each exercise","Instructor alters the weather to suit each exercise"]]}],
+ sections:[
+  {id:"c1",nav:"S1 · Electrical",title:"Student 1 · Exercise 1 · Electrical",sub:"Student 1 PF",def:{},items:[
+   I("H1","On stand, APU U/S, external air start","MEL APU U/S; ground air source and crossbleed start."),
+   I("H2","Pushback"),I("H3","SID"),I("H4","Loss of both engine driven generators"),I("H5","Total loss of AC power"),
+   I("H6","Return to landing"),I("H7","180° turn and line up on reciprocal RW",T180)]},
+  {id:"c2",nav:"S1 · Air systems",title:"Student 1 · Exercise 2 · Air systems",sub:"Student 1 PF",def:{},items:[
+   I("J1","Take-off position"),I("J2","SID, slew to cruising level"),
+   I("J3","Rapid decompression, emergency descent","Touch drill first. FOTB 19-01 R1; oxygen mask NORM/100%/EMER; beware confirmation bias (fire extinguisher leak event)."),
+   I("J4","Level off"),I("J5","PIOSEE, communications","NITS with the cabin crew; PA using the PA Handy-Dandy."),
+   I("J6","X-wind landing at suitable airport"),I("J7","180° turn and line up on reciprocal RW (if not completed already)"),
+   I("J8","Tailstrike on landing prevention training (Student 1 in LHS)",TS)]},
+  {id:"c3",nav:"S2 · Engines/fuel",title:"Student 2 · Exercise 1 · Engines / fuel",sub:"Student 2 PF",def:{},items:[
+   I("K1","Take-off position"),I("K2","SID"),
+   I("K3","Engine failure after take-off (approx. 500 ft AGL)","Severe damage with a high-rate fuel leak."),
+   I("K4","Return to landing"),I("K5","180° turn and line up on reciprocal RW",T180)]},
+  {id:"c4",nav:"S2 · Air systems",title:"Student 2 · Exercise 2 · Air systems",sub:"Student 2 PF",def:{},items:[
+   I("M1","Take-off position, SID"),I("M2","Slew to FL200, continue climb to FL360"),
+   I("M3","At FL360 system failure leading to loss of cabin pressure"),
+   I("M4","Emergency descent, level off, PIOSEE, communications","NITS with the cabin crew; PA using the PA Handy-Dandy."),
+   I("M5","X-wind landing at suitable airport"),I("M6","180° turn and line up on reciprocal RW (if not completed already)"),
+   I("M7","Tailstrike on landing prevention training (Student 2 in LHS)",TS)]},
+  {id:"c5",nav:"Remaining time",title:"Remaining time",sub:"Competency-based training for both pilots on weak areas",def:{},items:[
+   I("N1","Competency-based training on weak areas","Most common weak areas: raw data ILS and RTO.")]}]};
+const LOFT_PHASES=k=>[
+ I(k+"1","Briefing & planning","Weather, NOTAMs, fuel decision (commander's reason for any extra fuel), take-off alternate, DAR and holdover in freezing conditions."),
+ I(k+"2","Pre-flight, start & taxi"),I(k+"3","Take-off & departure"),I(k+"4","Climb & cruise"),
+ I(k+"5","Failure management","Recognition, QRH, PIOSEE, NITS, PA and ATC."),
+ I(k+"6","Descent, approach & landing / diversion"),
+ I(k+"7","After landing · engine-out taxi (LOS)","The LOFT ends after landing; revert to LOS to explore EOT (KORAs: unreported ground damage, ground collision).")];
+T.CULOFT={key:"CULOFT",cu:true,students:true,crew:false,short:"CU CRM LOFT",name:"Command Upgrade CRM LOFT",session:"CU CRM LOFT",summary:"CULOFT",
+ timing:"5 h per crew · TRE only · CU CRM eLearning module facilitated in the briefing",
+ admin:["CU CRM eLearning module facilitated before the session","Engine-out taxi explored after landing and included in the debrief","Any grade 4 or 5: candidate not recommended and file referred to SI and CI"],
+ sections:[
+  {id:"l1",nav:"LOFT · Student 1",title:"LOFT · Student 1 in the LHS",sub:"Commander: Student 1",def:{cpt:"PF",fo:"PM"},loft:"l1",items:LOFT_PHASES("P")},
+  {id:"l2",nav:"LOFT · Student 2",title:"LOFT · Student 2 in the LHS",sub:"Commander: Student 2",def:{cpt:"PM",fo:"PF"},loft:"l2",items:LOFT_PHASES("Q")},
+  {id:"l3",nav:"Remaining time",title:"Remaining time",sub:"FPM-M, FPM-A and AOP: speedbrake retraction muscle memory, correct pitch and thrust",def:{},items:[
+   I("R1","Windshear escape manoeuvre"),I("R2","Terrain escape manoeuvre"),I("R3","Approach to stall recovery"),I("R4","Go-arounds")]}]};
+T.CUCHK=JSON.parse(JSON.stringify(T.LPC));
+Object.assign(T.CUCHK,{key:"CUCHK",cu:true,students:true,noTD:true,short:"CU CHECK",name:"CU LPC/OPC or LST/OPC",session:"CU LPC/OPC",
+ admin:["EFOS completed and signed","RST e-Learning completion certificate checked","Cat II, Cat IIIa and Monitored Approach recurrency form checked","RHS check completed by both candidates","LST/OPC: raw data ILS approach to landing completed","Debrief done: Result / Reason / Restrictions / Retraining / Retest (FEG 5.10.2)"]});
+T.CUCHK.sections.push({id:"cu",nav:"RHS check",title:"RHS check",sub:"Mandatory in all CU checks, from the RHS, in addition to the LHS check · as PM act as a competent F/O",def:{},items:[
+ I("R1","RHS: take-off, engine failure at V1, profile to flaps up no lights"),
+ I("R2","RHS: SE ILS approach to G/A"),
+ I("R3","RHS: SE G/A profile to flaps up no lights"),
+ I("R4","RHS: SE ILS to landing")]});
+function loftPack(){try{return JSON.parse(localStorage.getItem("tre.cuLoftPack")||"null")}catch(e){return null}}
+function loftScenario(key){const pk=loftPack();const v=((S&&S.loft)||{})[key]||"";return pk&&v?pk.scenarios.find(x=>String(x.n)===String(v)):null}
+function loftCard(key){
+ const pk=loftPack();const v=((S.loft)||{})[key]||"";
+ if(!pk)return `<div class="card loft"><h3>LOFT scenario</h3><p class="muted" style="margin:0;font-size:14px">The 20 CU LOFT scenarios are confidential, so they are not built into the app. Import the scenarios file once on this device and they will be stored here only.</p><div class="foot"><button class="btn small" data-act="importloft">Import CU LOFT scenarios</button></div></div>`;
+ const sc=loftScenario(key);
+ const blk=(t,x,open)=>x?`<details ${open?"open":""}><summary>${h(t)}</summary><div class="loft-txt">${h(x)}</div></details>`:"";
+ return `<div class="card loft"><label class="field"><span class="lbl">LOFT scenario · ${h(pk.rev||"")}</span><select id="f-loft.${key}" data-k="loft.${key}"><option value="">Select a scenario…</option>${pk.scenarios.map(x=>`<option value="${x.n}" ${String(x.n)===String(v)?"selected":""}>LOFT ${x.n} – ${h(x.title)}${x.route?" ("+h(x.route)+")":""}</option>`).join("")}</select></label>
+  ${sc?blk("Overview",sc.header,true)+blk("Objectives",sc.objectives,true)+blk("Desired outcome",sc.outcome,true)+blk("Scenario",sc.scenario)+blk("Notes to instructor",sc.notes)+blk("LIDO flight plan",sc.flightplan)+blk("Weather & NOTAMs",sc.weather):""}</div>`;
+}
+function sdrList(k,v){return allItems().filter(it=>S.ex[it.id]&&S.ex[it.id][k].result===v)}
+function sdrCount(k){return SDR.map(v=>v+" "+sdrList(k,v).length).join(" · ")}
+function cuGradeAlerts(){const t=tpl();if(!t.cu||!t.summary||t.summary==="CUFFS")return [];const out=[];
+ ["cpt","fo"].forEach(k=>{const bad=COMPS.filter(([c])=>["4","5"].includes(S.grades[c][k]));if(!bad.length)return;
+  const five=bad.some(([c])=>S.grades[c][k]==="5");
+  out.push(`${pilotLabel(k)}: grade ${five?"5 (Improvement required)":"4 (Minimum acceptable)"} in ${bad.map(b=>b[0]).join(", ")}. ${five?"Training stops; refer the file to the Chief Instructor.":"Refer the file to the Chief Instructor for review."}${t.summary==="CULOFT"?" Not recommended for the CU check; refer to SI and CI.":""}`)});return out}
+function cuffsSummary(){
+ const t=tpl();const card=k=>{const d=sdrList(k,"D"),r=sdrList(k,"R");
+  return `<div class="card" style="display:flex;flex-direction:column;gap:10px"><h3>${h(pilotLabel(k))}${pilotName(k)?" · "+h(pilotName(k)):""}</h3>
+   <span class="tally" style="font-size:13px">${sdrCount(k)}</span>
+   ${d.length?`<div><span class="lbl">Deferred</span><ul class="auto">${d.map(x=>`<li><span class="xr">${h(x.code)}</span>${h(x.name)}</li>`).join("")}</ul></div>`:""}
+   ${r.length?`<div><span class="lbl">Repeat</span><ul class="auto">${r.map(x=>`<li class="neg"><span class="xr">${h(x.code)}</span>${h(x.name)}</li>`).join("")}</ul></div>`:""}
+   ${t.base?`<div class="field"><span class="lbl">Restricted base training airport</span>${seg(`sum.base.${k}`,["ACE","CIA","PSA","PSR"])}</div>`:""}
+   <label class="field"><span class="lbl">Comments (EFOS training record)</span>${ta(`notes.${k}`,t.base?"Include: Restricted base training completed at …":"",5)}</label></div>`};
+ return `<div class="sec-head"><h2>Summary & comments</h2><span class="sub">S = Satisfactory · D = Deferred · R = Repeat${t.crm?" · CRM learning objectives: "+h(t.crm):""}</span></div>${card("cpt")}${card("fo")}${exportCard()}`;
+}
 /* ---------------- Storage (IndexedDB on this device) ---------------- */
 const MEM={sessions:new Map(),photos:new Map()};
 const DB={
@@ -405,7 +566,7 @@ function newSession(type){
  const s={id:uid(),type,createdAt:Date.now(),updatedAt:Date.now(),date:today(),fstdCode:"",fstdType:"",crew:t.crew?"CPT / FO":"",examiner:"",
   pilots:{cpt:pilot(),fo:pilot()},ex:{},repeats:"",grades:{},body:"",debrief:{well:"",diff:""},sum:{improve:{cpt:"",fo:""},indRev:{cpt:"",fo:""},weakest2:{cpt:"",fo:""},weakest:{cpt:"",fo:""},trainingDay:{cpt:"",fo:""},outcome:{cpt:"",fo:""},failed:{cpt:"",fo:""}},admin:{},notes:{general:"",cpt:"",fo:""}};
  t.sections.forEach(sc=>sc.items.forEach(it=>{s.ex[it.id]=exDefault(sc,it)}));
- if(type==="LPC")s.lpc3=true;
+ if(type==="LPC"||type==="CUCHK")s.lpc3=true;normalize(s);
  COMPS.forEach(([c])=>s.grades[c]={cpt:"",fo:"",obsCpt:"",obsFo:""});
  if(t.parts){s.gradesT={};COMPS.forEach(([c])=>s.gradesT[c]={cpt:"",fo:"",obsCpt:"",obsFo:""})}
  return s;
@@ -421,6 +582,7 @@ function normalize(s){ // upgrade sessions saved by earlier versions
  COMPS.forEach(([c])=>{const g=s.grades[c]||(s.grades[c]={cpt:"",fo:""});if(g.obsCpt==null)g.obsCpt=g.obs||"";if(g.obsFo==null)g.obsFo=g.obs||"";delete g.obs});
  s.notes=s.notes||{};["cpt","fo"].forEach(k=>{if(s.notes[k]==null)s.notes[k]=""});
  if(T[s.type].parts){s.gradesT=s.gradesT||{};COMPS.forEach(([c])=>{if(!s.gradesT[c])s.gradesT[c]={cpt:"",fo:"",obsCpt:"",obsFo:""}})}
+ if(!s.sum.base)s.sum.base={cpt:"",fo:""};if(!s.sum.rec)s.sum.rec={cpt:"",fo:""};if(!s.loft)s.loft={l1:"",l2:""};if(s.type==="CUCHK"&&!s.cuKind)s.cuKind="LPC/OPC";
  if(s.body==null)s.body="";if(!s.debrief)s.debrief={well:"",diff:""};if(!s.sum.improve)s.sum.improve={cpt:"",fo:""};if(!s.sum.indRev)s.sum.indRev={cpt:"",fo:""};if(!s.sum.weakest2)s.sum.weakest2={cpt:"",fo:""};
  if(s.trainingDay==null){const td=(s.sum&&s.sum.trainingDay)||{};s.trainingDay=td.cpt||td.fo||""}
  if(s.type==="LPC"&&!s.lpc3){ // sessions saved with one card per item: merge the item cards back into their exercise card
@@ -453,7 +615,7 @@ function setSave(t,c){const el=$("#saveState");if(el){el.textContent=t;el.classN
 const app=$("#app");
 function render(){S?renderSession():renderHome()}
 
-function pilotLabel(k){const b=S.body===k?" (body)":"";if(k==="cpt")return (S.crew==="CPT / CPT"?"CPT (LHS)":"CPT")+b;return (S.crew==="CPT / CPT"?"CPT (RHS)":"FO")+b}
+function pilotLabel(k){if(S&&T[S.type]&&T[S.type].students)return k==="cpt"?"Student 1":"Student 2";const b=S.body===k?" (body)":"";if(k==="cpt")return (S.crew==="CPT / CPT"?"CPT (LHS)":"CPT")+b;return (S.crew==="CPT / CPT"?"CPT (RHS)":"FO")+b}
 function trainee(){return S.body==="cpt"?"fo":S.body==="fo"?"cpt":""}
 function pilotName(k){return (S.pilots[k].name||"").trim()}
 function firstName(k){return pilotName(k).split(/\s+/)[0]||""}
@@ -473,6 +635,8 @@ async function renderHome(){
    <button class="newbtn" data-new="OPC"><span class="plus">+ RST 3</span><span class="t">OPC + Training</span><span class="d">F1–F9, C1–C6, GO/NO GO T1–T8, LOFT/LOS/FPM T9–T16, sim setup</span></button>
    <div class="newbtn" style="grid-column:1/-1"><span class="plus">+ RST 4</span><span class="t">Training Day</span><span class="d">LOS/LOFT, UPRT, LOS2 airspeed unreliable, go-around &amp; windshear</span>
     <div class="trn-days">${Object.keys(TRN_DATA).map(d=>`<button data-new="TRN_${d[0]}" title="${d}">${d[0]}</button>`).join("")}</div></div>
+   <div class="newbtn" style="grid-column:1/-1"><span class="plus">+ CU</span><span class="t">Command Upgrade</span><span class="d">Student 1 / Student 2 · FFS 1–3 with S/D/R, CRM LOFT with the 20 scenarios, CU check with RHS</span>
+    <div class="trn-days cu-days"><button data-new="CU1">FFS 1</button><button data-new="CU2">FFS 2</button><button data-new="CU3">FFS 3</button><button data-new="CULOFT">LOFT</button><button data-new="CUCHK">Check</button></div></div>
   </div>
   <section class="hero" style="margin-top:6px"><span class="lbl">Sessions saved on this device</span></section>
   <div class="slist">${rows||`<div class="empty">No sessions yet. Start an LPC, OPC or Training Day above; it saves automatically as you type.</div>`}</div>
@@ -486,14 +650,14 @@ async function renderHome(){
 function fmtDate(d){if(!d)return "No date";const [y,m,dd]=d.split("-");return `${dd}/${m}/${y}`}
 
 function navSections(){
- const t=tpl();const list=[["datos","Session & pilots"]];
+ const t=tpl();const list=[["datos",t.students?"Session & students":"Session & pilots"]];
  if(t.setup)list.push(["setup","Sim setup"]);
  t.sections.forEach(s=>list.push([s.id,s.nav,s]));
- parts(t).forEach(p=>list.push([p.id,p.nav]));list.push(["cierre","Closing"]);
+ parts(t).forEach(p=>list.push([p.id,p.nav]));if((t.admin||[]).length)list.push(["cierre","Closing"]);
  return list;
 }
 function filled(id){const e=S.ex[id];return e&&((e.cpt.notes||"").trim()||(e.fo.notes||"").trim()||(e.cpt.comp||"").trim()||(e.fo.comp||"").trim()||e.cpt.result||e.fo.result)}
-function hasFail(id){const e=S.ex[id];return e&&(e.cpt.result==="FAIL"||e.fo.result==="FAIL")}
+function hasFail(id){const e=S.ex[id];return e&&(["FAIL","R"].includes(e.cpt.result)||["FAIL","R"].includes(e.fo.result))}
 
 function renderSession(){
  const t=tpl();
@@ -537,6 +701,16 @@ function renderSec(){
    <div class="field"><span class="lbl">Weakest competency (LPC)</span>${seg(`sum.weakest.${k}`,COMPS.map(c=>c[0]))}</div>
    <label class="field"><span class="lbl">TRE behavioural indicators</span>${ta(`pilots.${k}.indicators`,"From the LPC training form",2)}</label>
    <label class="field"><span class="lbl">Training scenario (EFOS)</span><input value="${h(t.dayName)}" readonly></label></div>`;
+  if(t.cu&&t.summary!=="LPC"){
+   const cuCard=k=>`<div class="card" style="display:flex;flex-direction:column;gap:12px"><h3>${h(pilotLabel(k))}</h3>
+    <div class="grid">${inp(`pilots.${k}.name`,"Name")}${inp(`pilots.${k}.crewcode`,"Crewcode",{caps:true})}${segField(`pilots.${k}.licType`,"Licence",["ATPL","CPL"])}</div></div>`;
+   return `<div class="sec-head"><h2>Session & students</h2><span class="sub mono">${h(t.timing)}</span></div>
+   <div class="card" style="display:flex;flex-direction:column;gap:12px"><h3>Session</h3>
+    <div class="grid"><label class="field"><span class="lbl">Session</span><input value="${h(t.session)}" readonly></label>
+    ${inp("date","Date",{type:"date"})}${inp("fstdCode","FSTD & code",{caps:true})}${inp("examiner","Instructor / EFOS")}</div>
+    <div class="grid">${segField("fstdType","FSTD type",["B737-800","B737-8200"])}</div></div>
+   ${cuCard("cpt")}${cuCard("fo")}`;
+  }
   if(t.summary==="TRN"){
    return `<div class="sec-head"><h2>Session & pilots</h2><span class="sub mono">${h(t.timing)}</span></div>
    ${t.day==="F"&&S.fstdType==="B737-800"?`<div class="banner bad">Training Day F is only available in -8200 simulators.</div>`:""}
@@ -549,10 +723,10 @@ function renderSec(){
   }
   return `<div class="sec-head"><h2>Session & pilots</h2>${t.timing?`<span class="sub mono">${h(t.timing)}</span>`:""}</div>
   <div class="card" style="display:flex;flex-direction:column;gap:12px"><h3>Session</h3>
-   <div class="grid"><label class="field"><span class="lbl">Session</span><input value="${h(t.session)}" readonly></label>
+   <div class="grid"><label class="field"><span class="lbl">Session</span><input value="${h(t.cu&&S.cuKind?"CU "+S.cuKind:t.session)}" readonly></label>
    ${inp("date","Date",{type:"date"})}${inp("fstdCode","FSTD & code",{caps:true})}${inp("examiner","Examiner / EFOS")}</div>
    <div class="grid">${segField("fstdType","FSTD type",["B737-800","B737-8200"])}
-   ${t.crew?segField("crew","Crew",["CPT / FO","CPT / CPT",["with body",'With "body"']]):segField("body","Body (single trainee)",[["cpt","CPT is body"],["fo","FO is body"]])}</div></div>
+   ${t.crew?segField("crew","Crew",["CPT / FO","CPT / CPT",["with body",'With "body"']]):t.cu?segField("cuKind","Check type",["LPC/OPC","LST/OPC"]):segField("body","Body (single trainee)",[["cpt","CPT is body"],["fo","FO is body"]])}</div></div>
   ${pilotCard("cpt")}${pilotCard("fo")}`;
  }
  if(sec==="setup"){
@@ -563,12 +737,12 @@ function renderSec(){
  }
  const s=t.sections.find(x=>x.id===sec);
  if(s){
-  return `<div class="sec-head"><h2>${h(s.title)}</h2><span class="sub">${h(s.sub)}</span></div>`+
+  return `<div class="sec-head"><h2>${h(s.title)}</h2><span class="sub">${h(s.sub)}</span></div>`+(s.loft?loftCard(s.loft):"")+
    s.items.map((it,i)=>(it.passfail&&(i===0||s.items[i-1].group!==it.group)?`<div class="grp"><div class="grp-head"><span class="ex-code">${h(it.gcode)}</span><h3>${h(it.name)}</h3></div>${it.gnote?`<div class="guide">${h(it.gnote)}</div>`:""}</div>`:"")+(it.pre||[]).map(x=>`<div class="hdr-row">${h(x)}</div>`).join("")+(it.done?doneCard(it):exCard(it))+(it.post||[]).map(x=>`<div class="hdr-row">${h(x)}</div>`).join("")).join("")+(t.chipnote&&s===t.sections[t.sections.length-1]?`<p class="muted" style="font-size:12px;margin:0">${h(t.chipnote)}</p>`:"")+
    (s.repeats?`<div class="card ex"><div class="ex-head"><span class="ex-name">REPEATS</span></div><div class="guide">${h(t.repeatsNote)}</div><label class="field"><span class="lbl">Item / Pilot / Result</span>${ta("repeats","e.g. F6 EFATO / FO / repeated -> PASS",3)}</label></div>`:"");
  }
  const part=parts(t).find(p=>p.id===sec);
- if(part){const gk=part.gk;
+ if(part){const gk=part.gk;if(t.summary==="CUFFS")return cuffsSummary();
   const pc=(c,k,ok)=>S.body===k?`<div class="pcell"><span class="lbl">${h(pilotLabel(k))}</span><span class="muted" style="font-size:13px">Not assessed</span></div>`:`<div class="pcell"><div class="ph"><span class="lbl">${h(pilotLabel(k))}${pilotName(k)?" · "+h(pilotName(k)):""}</span>${seg(`${gk}.${c}.${k}`,GRADES,"grade")}</div>
     ${autoList(c,k)}<textarea class="obs" id="f-${gk}.${h(c)}.${ok}" data-k="${gk}.${h(c)}.${ok}" rows="2" placeholder="Key observations">${h(S[gk][c][ok]||"")}</textarea></div>`;
   TG={cpt:tagged("cpt",part.secs),fo:tagged("fo",part.secs)};
@@ -581,9 +755,11 @@ function renderSec(){
    const bodyCell=k=>`<div class="field">${plab(k)}<span class="muted" style="font-size:13px">Body</span></div>`;
    extra=(S.body?kv("Weakest competencies",k=>S.body===k?bodyCell(k):`<div class="field">${plab(k)}<span class="lbl">Weakest (x axis)</span>${seg(`sum.weakest.${k}`,COMPS.map(c=>c[0]))}<span class="lbl" style="margin-top:6px">2nd weakest (y axis)</span>${seg(`sum.weakest2.${k}`,COMPS.map(c=>c[0]))}</div>`)
     :kv("Weakest competency",k=>`<div class="field">${plab(k)}${seg(`sum.weakest.${k}`,COMPS.map(c=>c[0]))}</div>`))+
-    `<div class="kv"><span class="lbl" style="padding-top:8px">Training day (A–G)</span><div class="field" style="grid-column:2/-1" id="tdField">${tdField()}</div></div>`+
-    `<div class="kv"><span></span><div style="grid-column:2/-1"><button class="btn small" data-act="mktrn">Start Training Day with this crew</button></div></div>`+
+    (t.noTD?"":`<div class="kv"><span class="lbl" style="padding-top:8px">Training day (A–G)</span><div class="field" style="grid-column:2/-1" id="tdField">${tdField()}</div></div>`+
+    `<div class="kv"><span></span><div style="grid-column:2/-1"><button class="btn small" data-act="mktrn">Start Training Day with this crew</button></div></div>`)+
     kv("Outcome",k=>S.body===k?bodyCell(k):`<div class="field">${plab(k)}${seg(`sum.outcome.${k}`,["P","PP","F"],"grade")}</div>`);
+  }else if(t.summary==="CULOFT"){
+   extra=kv("Recommended for CU LPC/OPC or LST/OPC?",k=>`<div class="field">${plab(k)}${seg(`sum.rec.${k}`,["Yes","No"])}</div>`);
   }else if(t.summary==="TRN"){
    const bodyCell=k=>`<div class="field">${plab(k)}<span class="muted" style="font-size:13px">Body</span></div>`;
    extra=kv("Weakest competency (LPC)",k=>S.body===k?bodyCell(k):`<div class="field">${plab(k)}${seg(`sum.weakest.${k}`,COMPS.map(c=>c[0]))}</div>`)+
@@ -600,7 +776,8 @@ function renderSec(){
   return `<div class="sec-head"><h2>${h(part.title)}</h2><span class="sub">Grades 1 Excellent – 5 Improvement required (FEG 5.11) · exercise notes tagged with a competency (AOP, K, FPM-M…) appear here automatically</span></div>
   <div class="card"><div class="gtable">${rows}</div></div>
   ${extra&&part.id==="resumen"?`<div class="card">${extra}</div>`:""}
-  ${t.summary==="LPC"?`<p class="muted" style="font-size:12px;margin:0">* Day F only in -8200 sims. ** Examiner discretion: review the options so the desired pilot is PF; select based on the weaker candidate. Partial Pass: ≤5 items failed; Fail: &gt;5 items or criteria met (FEG 5.8.9). Assign in EFOS "Training Scenario".</p>`:""}
+  ${cuGradeAlerts().map(x=>`<div class="banner bad">${h(x)}</div>`).join("")}
+  ${t.summary==="LPC"&&!t.noTD?`<p class="muted" style="font-size:12px;margin:0">* Day F only in -8200 sims. ** Examiner discretion: review the options so the desired pilot is PF; select based on the weaker candidate. Partial Pass: ≤5 items failed; Fail: &gt;5 items or criteria met (FEG 5.8.9). Assign in EFOS "Training Scenario".</p>`:""}
   ${exportCard()}`;
  }
  if(sec==="cierre"){
@@ -617,7 +794,7 @@ function notesCard(){
 
 function exCard(it){
  const e=S.ex[it.id];const ph=P.filter(p=>p.exId===it.id);
- const panel=k=>`<div class="pilot"><div class="pilot-top"><span class="who"><b>${h(pilotLabel(k))}</b>${h(firstName(k)||"—")}</span><span class="ctrls">${seg(`ex.${it.id}.${k}.role`,["PF","PM"],"role")}${it.passfail?seg(`ex.${it.id}.${k}.result`,["PASS","FAIL"],"res"):""}</span></div>
+ const panel=k=>`<div class="pilot"><div class="pilot-top"><span class="who"><b>${h(pilotLabel(k))}</b>${h(firstName(k)||"—")}</span><span class="ctrls">${tpl().sdr?seg(`ex.${it.id}.${k}.result`,SDR,"sdr"):seg(`ex.${it.id}.${k}.role`,["PF","PM"],"role")}${it.passfail?seg(`ex.${it.id}.${k}.result`,["PASS","FAIL"],"res"):""}</span></div>
    ${ta(`ex.${it.id}.${k}.notes`,"Notes",3)}</div>`;
  return `<article class="card ex ${hasFail(it.id)?"has-fail":filled(it.id)?"has-notes":""}" id="ex-${h(it.id)}">
   <div class="ex-head">${it.passfail?`<span class="ex-code">${h(it.item)}</span><span class="ex-name">${h(it.itemName||it.item)}</span>`:`${it.code?`<span class="ex-code">${h(it.code)}</span>`:""}<span class="ex-name">${h(it.name)}</span>`}</div>
@@ -637,9 +814,12 @@ function issues(){
  if(!S.date)out.push("Session date is missing.");
  if(!S.fstdType)out.push("FSTD type (-800 / -8200) is missing.");
  if(S.type==="LPC"&&!S.trainingDay)out.push("Training Day (A–G) not assigned.");
+ cuGradeAlerts().forEach(x=>out.push(x));
+ if(S.type==="CUCHK"&&S.cuKind==="LST/OPC"&&!filled("L16"))out.push("LST/OPC: the raw data ILS approach to landing has no notes.");
+ if(S.type==="CULOFT")["l1","l2"].forEach((k,i)=>{if(!S.loft[k])out.push(`LOFT scenario not selected for Student ${i+1}.`)});
  ["cpt","fo"].forEach(k=>{const p=S.pilots[k],l=pilotLabel(k);
   if(!p.name.trim())out.push(`${l} name is missing.`);
-  if(!p.elp&&S.body!==k&&!isTRN())out.push(`${l} ELP is missing.`)});
+  if(!p.elp&&S.body!==k&&!isTRN()&&!(tpl().cu&&tpl().summary!=="LPC"))out.push(`${l} ELP is missing.`)});
  ["cpt","fo"].forEach(k=>{const f=allItems().filter(it=>S.ex[it.id][k].result==="FAIL").map(it=>it.code);if(f.length)out.push(`${pilotLabel(k)}: FAIL marked on ${f.join(", ")}. Check Failed items, Repeats and FEG 5.10.3 grading.`)});
  expiryAlerts().forEach(a=>out.push(`${a.who}: ${a.what} ${a.text} (${fmtDate(a.date)}). Tell the crew member.`));
  const items=allItems();const empty=items.filter(i=>!filled(i.id));
@@ -663,7 +843,7 @@ function exportCard(){
 /* ---------------- Events ---------------- */
 app.addEventListener("input",e=>{
  const el=e.target;
- if(el.dataset.k){setP(S,el.dataset.k,el.value);dirty();
+ if(el.dataset.k){setP(S,el.dataset.k,el.value);dirty();if(/^loft\./.test(el.dataset.k)){renderSession();return}
   if(el.tagName==="TEXTAREA")autosize(el);
   const card=el.closest(".ex");if(card){const id=card.id.slice(3);card.classList.toggle("has-notes",!!filled(id));updateNavCounts()}
   if(/^pilots\.|^date|^fstd/.test(el.dataset.k))updateHeaderSub();
@@ -681,6 +861,7 @@ app.addEventListener("pointerdown",e=>{if(e.target.closest("[data-ins]"))e.preve
 app.addEventListener("click",async e=>{
  const b=e.target.closest("button");if(!b)return;
  if(b.dataset.ins){insertCode(b.dataset.ins);return}
+ if(b.dataset.act==="importloft"){$("#importFile").click();return}
  if(b.dataset.act==="mktrn"){if(!S.trainingDay){toast("Select the Training Day first");return}
   const src=S;await saveNow();const n=newSession("TRN_"+src.trainingDay);
   Object.assign(n,{fstdCode:src.fstdCode,fstdType:src.fstdType,examiner:src.examiner,body:src.body||""});
@@ -697,7 +878,7 @@ app.addEventListener("click",async e=>{
  const segEl=b.closest("[data-seg]");
  if(segEl&&b.dataset.val!==undefined){const path=segEl.dataset.seg;const cur=getP(S,path);const v=cur===b.dataset.val?"":b.dataset.val;setP(S,path,v);
   segEl.querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed",x.dataset.val===v));dirty();
-  if(path==="crew"||path==="fstdType"||path==="body")renderSession();
+  if(path==="crew"||path==="fstdType"||path==="body"||path==="cuKind")renderSession();
   if(/^sum\.weakest2?\./.test(path))refreshTD();
   if(/\.result$/.test(path)){const card=segEl.closest(".ex");if(card){const id=card.id.slice(3);card.classList.toggle("has-fail",!!hasFail(id));card.classList.toggle("has-notes",!hasFail(id)&&!!filled(id));updateNavCounts()}}
   return}
@@ -785,7 +966,7 @@ async function giveFile(filename,blob){
 }
 
 /* ---------------- PDF ---------------- */
-function pt(s){return String(s??"").replace(/[‘’‛]/g,"'").replace(/[“”]/g,'"').replace(/[–—]/g,"-").replace(/…/g,"...").replace(/→/g,"->").replace(/←/g,"<-").replace(/≤/g,"<=").replace(/≥/g,">=").replace(/•/g,"-").replace(/[^\n\r\t\x20-\x7E -ÿ]/g,"?")}
+function pt(s){return String(s??"").replace(/[‘’‛]/g,"'").replace(/[“”]/g,'"').replace(/[–—]/g,"-").replace(/…/g,"...").replace(/→/g,"->").replace(/←/g,"<-").replace(/≤/g,"<=").replace(/≥/g,">=").replace(/[•●]/g,"-").replace(/✓/g,"v").replace(/[^\n\r\t\x20-\x7E -ÿ]/g,"?")}
 function blobToDataURL(b){return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsDataURL(b)})}
 function evidenceList(){const order=allItems().map(i=>i.id);return P.slice().sort((a,b)=>order.indexOf(a.exId)-order.indexOf(b.exId)||a.createdAt-b.createdAt).map((p,i)=>({...p,label:"E"+(i+1)}))}
 function fileBase(){const t=tpl();return `${S.date||"sin-fecha"}_${t.key}${S.fstdCode?"_"+S.fstdCode.replace(/[^\w-]+/g,""):""}`}
@@ -831,28 +1012,30 @@ async function buildPDF(){
 
  for(const s of t.sections){
   heading(s.title,"  "+s.sub);
+  if(s.loft){const sc=loftScenario(s.loft);doc.autoTable({...base,startY:y,body:[[{content:sc?pt(`LOFT ${sc.n} - ${sc.title}${sc.route?" ("+sc.route+")":""}\nObjectives:\n${sc.objectives||"-"}\nDesired outcome:\n${sc.outcome||"-"}`):"LOFT scenario not selected",styles:{fillColor:soft}}]]});after()}
   const body=s.items.flatMap(it=>{const e=S.ex[it.id];
    const hrow=x=>[{content:pt(x),colSpan:3,styles:{fillColor:soft,fontStyle:"bold",textColor:mut}}];
    const pre=(it.pre||[]).map(hrow),post=(it.post||[]).map(hrow);
    if(it.done)return [...pre,[pt(it.code+"  "+it.name),{content:pt(it.note||"Completed in the LOFT"),colSpan:2,styles:{textColor:mut,fontStyle:"italic"}}],...post];
    const left=[(it.code?it.code+"  ":"")+it.name,it.itemName||"",[it.pf?"PF: "+it.pf:"",it.cond||""].filter(Boolean).join(" | "),it.refs.length?it.refs.join("  "):"",evBy[it.id]?"Evidence: "+evBy[it.id].join(", "):""].filter(Boolean).join("\n");
-   const cell=k=>{const x=e[k];const head=[x.role||"PF/PM: -",x.result||"",x.comp?"COMP: "+x.comp:""].filter(Boolean).join("   ");return head+"\n"+(x.notes||"").trim()};
+   const cell=k=>{const x=e[k];const head=[t.sdr?"":(x.role||"PF/PM: -"),t.sdr?(x.result?"Result: "+x.result:"Result: -"):(x.result||""),x.comp?"COMP: "+x.comp:""].filter(Boolean).join("   ");return head+"\n"+(x.notes||"").trim()};
    return [...pre,[pt(left),pt(cell("cpt")),pt(cell("fo"))],...post]});
   doc.autoTable({...base,startY:y,head:[["EXERCISE",pt(cptH),pt(foH)]],body,columnStyles:{0:{cellWidth:46,fontStyle:"bold"}},
-   didParseCell:d=>{if(d.section==="body"&&d.column.index>0){const v=String(d.cell.raw&&d.cell.raw.content!==undefined?d.cell.raw.content:d.cell.raw).split("\n")[0];if(d.cell.colSpan>1)return;if(/\bFAIL\b/.test(v))d.cell.styles.fillColor=[251,227,225];else if(/^PF(\s|$)/.test(v))d.cell.styles.fillColor=[234,246,240]}}});
+   didParseCell:d=>{if(d.section==="body"&&d.column.index>0){const v=String(d.cell.raw&&d.cell.raw.content!==undefined?d.cell.raw.content:d.cell.raw).split("\n")[0];if(d.cell.colSpan>1)return;if(/\bFAIL\b|Result: R\b/.test(v))d.cell.styles.fillColor=[251,227,225];else if(/Result: D\b/.test(v))d.cell.styles.fillColor=[251,238,214];else if(/Result: S\b/.test(v))d.cell.styles.fillColor=[234,246,240];else if(/^PF(\s|$)/.test(v))d.cell.styles.fillColor=[234,246,240]}}});
   after();
   if(s.repeats){doc.autoTable({...base,startY:y,body:[["REPEATS\n"+pt(t.repeatsNote),pt(S.repeats||"")]],columnStyles:{0:{cellWidth:46,fontStyle:"bold"}}});after()}
  }
 
- for(const part of parts(t)){heading(parts(t).length>1?part.title:"Summary & closing","  Grades 1-5 (FEG 5.11)");
+ if(t.summary==="CUFFS")heading("Summary & comments","  S = Satisfactory | D = Deferred | R = Repeat");else for(const part of parts(t)){heading(parts(t).length>1?part.title:"Summary & closing","  Grades 1-5 (FEG 5.11)");
  doc.autoTable({...base,startY:y,head:[["COMPETENCY",pt(pilotLabel("cpt")),"KEY OBSERVATIONS - "+pt(pilotLabel("cpt")),pt(pilotLabel("fo")),"KEY OBSERVATIONS - "+pt(pilotLabel("fo"))]],body:(TG={cpt:tagged("cpt",part.secs),fo:tagged("fo",part.secs)},COMPS.map(([c,n])=>[`${c} - ${n}`,GRADE_WORD[S[part.gk][c].cpt]||"",pt(obsText(c,"cpt",part.gk)),GRADE_WORD[S[part.gk][c].fo]||"",pt(obsText(c,"fo",part.gk))])),columnStyles:{0:{cellWidth:34,fontStyle:"bold"},1:{cellWidth:18,halign:"center",fontStyle:"bold"},3:{cellWidth:18,halign:"center",fontStyle:"bold"}}});after();}
  const sm=S.sum;const wk=k=>S.body===k?"Body":(sm.weakest[k]||"")+(S.body&&sm.weakest2&&sm.weakest2[k]?"  (2nd: "+sm.weakest2[k]+")":"");
  const yn=(o,k)=>S.body===k?"Body":(o[k]||"");
- const srows=t.summary==="TRN"?[["WEAKEST COMPETENCY (LPC)",wk("cpt"),wk("fo")],["IMPROVEMENT OBSERVED",yn(sm.improve,"cpt"),yn(sm.improve,"fo")],["TRE INDICATORS REVIEWED",yn(sm.indRev,"cpt"),yn(sm.indRev,"fo")]]:t.summary==="LPC"?[["WEAKEST COMPETENCY",wk("cpt"),wk("fo")],["TRAINING DAY (A-G)",{content:S.trainingDay||"",colSpan:2}],["OUTCOME",S.body==="cpt"?"Body":sm.outcome.cpt,S.body==="fo"?"Body":sm.outcome.fo]]:[["OPC OUTCOME",sm.outcome.cpt,sm.outcome.fo],["WEAKEST COMPETENCY",sm.weakest.cpt,sm.weakest.fo],["FAILED ITEMS",sm.failed.cpt,sm.failed.fo]];
- doc.autoTable({...base,startY:y,head:[["",pt(pilotLabel("cpt")),pt(pilotLabel("fo"))]],body:srows.map(r=>r.map(x=>typeof x==="object"&&x?{...x,content:pt(x.content)}:pt(x||""))),columnStyles:{0:{cellWidth:46,fontStyle:"bold",fillColor:soft}}});after();
+ const lst=(k,v)=>sdrList(k,v).map(x=>x.code+" "+x.name).join("\n");
+ const srows=t.summary==="CUFFS"?[["S / D / R",sdrCount("cpt"),sdrCount("fo")],["DEFERRED",lst("cpt","D"),lst("fo","D")],["REPEAT",lst("cpt","R"),lst("fo","R")],...(t.base?[["RESTRICTED BASE",sm.base.cpt||"",sm.base.fo||""]]:[]),["COMMENTS",S.notes.cpt||"",S.notes.fo||""],["LICENCE",S.pilots.cpt.licType||"",S.pilots.fo.licType||""]]:t.summary==="CULOFT"?[["RECOMMENDED FOR CU CHECK",yn(sm.rec,"cpt"),yn(sm.rec,"fo")],["LICENCE",S.pilots.cpt.licType||"",S.pilots.fo.licType||""]]:t.summary==="TRN"?[["WEAKEST COMPETENCY (LPC)",wk("cpt"),wk("fo")],["IMPROVEMENT OBSERVED",yn(sm.improve,"cpt"),yn(sm.improve,"fo")],["TRE INDICATORS REVIEWED",yn(sm.indRev,"cpt"),yn(sm.indRev,"fo")]]:t.summary==="LPC"?[["WEAKEST COMPETENCY",wk("cpt"),wk("fo")],["TRAINING DAY (A-G)",{content:S.trainingDay||"",colSpan:2}],["OUTCOME",S.body==="cpt"?"Body":sm.outcome.cpt,S.body==="fo"?"Body":sm.outcome.fo]]:[["OPC OUTCOME",sm.outcome.cpt,sm.outcome.fo],["WEAKEST COMPETENCY",sm.weakest.cpt,sm.weakest.fo],["FAILED ITEMS",sm.failed.cpt,sm.failed.fo]];
+ doc.autoTable({...base,startY:y,head:[["",pt(pilotLabel("cpt")),pt(pilotLabel("fo"))]],body:srows.filter(r=>!(t.noTD&&r[0]==="TRAINING DAY (A-G)")).map(r=>r.map(x=>typeof x==="object"&&x?{...x,content:pt(x.content)}:pt(x||""))),columnStyles:{0:{cellWidth:46,fontStyle:"bold",fillColor:soft}}});after();
  if(t.summary==="TRN"){doc.autoTable({...base,startY:y,head:[["DEBRIEF - What went well and why?","DEBRIEF - What would they do differently and why?"]],body:[[pt(S.debrief.well||""),pt(S.debrief.diff||"")]],bodyStyles:{minCellHeight:16}});after()}
- doc.autoTable({...base,startY:y,head:[[{content:"ADMIN CHECKLIST",colSpan:2}]],body:t.admin.map((a,i)=>[S.admin["a"+i]?"[X]":"[  ]",pt(a)]),columnStyles:{0:{cellWidth:12,halign:"center",fontStyle:"bold"}}});after();
- if((S.notes.cpt||"").trim()||(S.notes.fo||"").trim()){doc.autoTable({...base,startY:y,head:[["GENERAL NOTES - "+pt(cptH),"GENERAL NOTES - "+pt(foH)]],body:[[pt(S.notes.cpt||""),pt(S.notes.fo||"")]]});after()}
+ if((t.admin||[]).length)doc.autoTable({...base,startY:y,head:[[{content:"ADMIN CHECKLIST",colSpan:2}]],body:t.admin.map((a,i)=>[S.admin["a"+i]?"[X]":"[  ]",pt(a)]),columnStyles:{0:{cellWidth:12,halign:"center",fontStyle:"bold"}}});after();
+ if(t.summary!=="CUFFS"&&((S.notes.cpt||"").trim()||(S.notes.fo||"").trim())){doc.autoTable({...base,startY:y,head:[["GENERAL NOTES - "+pt(cptH),"GENERAL NOTES - "+pt(foH)]],body:[[pt(S.notes.cpt||""),pt(S.notes.fo||"")]]});after()}
  if((S.notes.general||"").trim()){doc.autoTable({...base,startY:y,head:[["GENERAL NOTES (earlier version)"]],body:[[pt(S.notes.general)]]});after()}
 
  // Evidence annex
@@ -928,12 +1111,13 @@ function sessionText(){
  L.push(`${t.session} - Session notes`,`Date: ${fmtDate(S.date)} | FSTD: ${S.fstdCode||"?"} | Type: ${S.fstdType||"?"}${t.crew?" | Crew: "+S.crew:""} | Examiner: ${S.examiner||""}`,"");
  ["cpt","fo"].forEach(k=>{L.push(`${pilotLabel(k)}: `+pilotRows(false).map(([l,f])=>`${l}: ${f(k)||"-"}`).join(" | "))});
  for(const s of t.sections){L.push("",`== ${s.title} (${s.sub}) ==`);
+  if(s.loft){const sc=loftScenario(s.loft);L.push(sc?`LOFT ${sc.n} - ${sc.title} (${sc.route})`:"LOFT scenario not selected")}
   for(const it of s.items){(it.pre||[]).forEach(x=>L.push(`  [${x}]`));if(it.done){L.push(`- ${it.code} ${it.name}: ${it.note||"Completed in the LOFT"}`);continue}const e=S.ex[it.id];L.push(`- ${it.code?it.code+" ":""}${it.name}${it.itemName?" ("+it.itemName+")":""}${it.pf?" | PF: "+it.pf:""}${it.cond?" | "+it.cond:""}${it.refs.length?" | "+it.refs.join(" "):""}${evBy[it.id]?" | Evidence: "+evBy[it.id].join(", "):""}`);
    ["cpt","fo"].forEach(k=>{const x=e[k];L.push(`   ${pilotLabel(k)} [${x.role||"-"}${x.result?" "+x.result:""}]${x.comp?" COMP: "+x.comp:""}: ${(x.notes||"").trim().replace(/\n+/g," / ")||"-"}`)})}
   if(s.repeats)L.push(`- REPEATS: ${S.repeats||"-"}`)}
- for(const part of parts(t)){L.push("",`== ${part.title} ==`);TG={cpt:tagged("cpt",part.secs),fo:tagged("fo",part.secs)};COMPS.forEach(([c])=>{const g=S[part.gk][c];const oc=obsText(c,"cpt",part.gk).replace(/\n/g," / "),of=obsText(c,"fo",part.gk).replace(/\n/g," / ");if(g.cpt||g.fo||oc||of)L.push(`${c}: ${pilotLabel("cpt")} ${GRADE_WORD[g.cpt]||"-"}${oc?" ("+oc+")":""} | ${pilotLabel("fo")} ${GRADE_WORD[g.fo]||"-"}${of?" ("+of+")":""}`)});}
+ if(t.summary!=="CUFFS")for(const part of parts(t)){L.push("",`== ${part.title} ==`);TG={cpt:tagged("cpt",part.secs),fo:tagged("fo",part.secs)};COMPS.forEach(([c])=>{const g=S[part.gk][c];const oc=obsText(c,"cpt",part.gk).replace(/\n/g," / "),of=obsText(c,"fo",part.gk).replace(/\n/g," / ");if(g.cpt||g.fo||oc||of)L.push(`${c}: ${pilotLabel("cpt")} ${GRADE_WORD[g.cpt]||"-"}${oc?" ("+oc+")":""} | ${pilotLabel("fo")} ${GRADE_WORD[g.fo]||"-"}${of?" ("+of+")":""}`)});}
  const sm=S.sum;L.push(`Weakest: ${sm.weakest.cpt||"-"} / ${sm.weakest.fo||"-"}`,`Outcome: ${sm.outcome.cpt||"-"} / ${sm.outcome.fo||"-"}`);
- if(t.summary==="TRN")L.push(`Improvement observed: ${sm.improve.cpt||"-"} / ${sm.improve.fo||"-"}`,`TRE indicators reviewed: ${sm.indRev.cpt||"-"} / ${sm.indRev.fo||"-"}`,`Debrief - went well: ${S.debrief.well||"-"}`,`Debrief - differently: ${S.debrief.diff||"-"}`);else if(t.summary==="LPC")L.push(`Training day: ${S.trainingDay||"-"}`);else L.push(`Failed items: ${sm.failed.cpt||"-"} / ${sm.failed.fo||"-"}`);
+ if(t.summary==="CUFFS")["cpt","fo"].forEach(k=>L.push(`${pilotLabel(k)}: ${sdrCount(k)} | Deferred: ${sdrList(k,"D").map(x=>x.code).join(", ")||"-"} | Repeat: ${sdrList(k,"R").map(x=>x.code).join(", ")||"-"}${t.base?" | Restricted base: "+(S.sum.base[k]||"-"):""} | Comments: ${S.notes[k]||"-"}`));else if(t.summary==="CULOFT")L.push(`Recommended for CU check: ${S.sum.rec.cpt||"-"} / ${S.sum.rec.fo||"-"}`);else if(t.summary==="TRN")L.push(`Improvement observed: ${sm.improve.cpt||"-"} / ${sm.improve.fo||"-"}`,`TRE indicators reviewed: ${sm.indRev.cpt||"-"} / ${sm.indRev.fo||"-"}`,`Debrief - went well: ${S.debrief.well||"-"}`,`Debrief - differently: ${S.debrief.diff||"-"}`);else if(t.summary==="LPC")L.push(`Training day: ${S.trainingDay||"-"}`);else L.push(`Failed items: ${sm.failed.cpt||"-"} / ${sm.failed.fo||"-"}`);
  if((S.notes.cpt||"").trim()||(S.notes.fo||"").trim())L.push("","== General notes ==",`${pilotLabel("cpt")}: ${S.notes.cpt||"-"}`,`${pilotLabel("fo")}: ${S.notes.fo||"-"}`);if((S.notes.general||"").trim())L.push(`Earlier general notes: ${S.notes.general}`);
  return L.join("\n");
 }
@@ -957,7 +1141,7 @@ async function backup(btn){
 }
 $("#importFile").addEventListener("change",async e=>{
  const f=e.target.files&&e.target.files[0];e.target.value="";if(!f)return;
- try{const d=JSON.parse(await f.text());if(d.app!=="cuaderno-tre")throw new Error("formato");
+ try{const d=JSON.parse(await f.text());if(d.app==="tre-cu-loft-pack"){try{localStorage.setItem("tre.cuLoftPack",JSON.stringify(d));toast(`${d.scenarios.length} CU LOFT scenarios imported`);if(S)renderSession()}catch(x){toast("Could not store the scenarios on this device")}return}if(d.app!=="cuaderno-tre")throw new Error("formato");
   for(const s of d.sessions||[])await DB.put("sessions",s);
   for(const p of d.photos||[]){const blob=await (await fetch(p.blob)).blob();await DB.put("photos",{...p,blob})}
   toast(`Imported ${(d.sessions||[]).length} session${(d.sessions||[]).length===1?"":"s"}`);renderHome();
