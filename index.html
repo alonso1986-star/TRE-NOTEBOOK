@@ -100,6 +100,8 @@ main{min-width:0;display:flex;flex-direction:column;gap:14px}
 .field input,.field textarea,.pilot textarea,.pilot input,.obs{width:100%;border:1px solid var(--line);background:var(--surface-2);border-radius:7px;padding:9px 10px;font-size:16px}
 textarea{resize:vertical;min-height:84px;line-height:1.45}
 textarea.obs{min-height:60px}
+.birow{display:flex;gap:6px;align-items:stretch}.birow select.bi{flex:1;min-width:0}.bimode{flex-wrap:nowrap}.bimode button{min-width:38px;font-weight:700}.bimode button.on.bi-yes{background:#1d7a4f;color:#fff}.bimode button.on.bi-no{background:#b42318;color:#fff}
+select.bi{width:100%;border:1px dashed var(--line);background:var(--surface);color:var(--muted);border-radius:7px;padding:7px 9px;font-size:14px}
 .auto{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px;font-size:14px}
 .auto li{background:var(--surface-2);border-left:3px solid var(--line);border-radius:5px;padding:5px 8px;line-height:1.35}
 .auto li.pos{border-left-color:var(--pf)}
@@ -244,6 +246,21 @@ table.setup td.on{background:var(--accent-soft)}
 "use strict";
 /* ---------------- Template data (from the user's RST 3 / RST 4 .docx templates) ---------------- */
 const COMPS=[["AOP","Application of Procedures"],["KNO","Knowledge"],["FPM-A","Flight Path Mgmt Auto"],["FPM-M","Flight Path Mgmt Manual"],["COM","Communication"],["L&T","Leadership & Teamwork"],["PSDM","Problem Solving & DM"],["SA","Situation Awareness"],["WLM","Workload Management"]];
+const BI={ // RST 4 General Guide to Recurrent Training and Checking - behavioural indicators
+ "AOP":["Identifies the source of operating instructions","Follows SOPs unless a higher degree of safety dictates an appropriate deviation","Identifies and follows all operating instructions in a timely manner","Correctly operates aircraft systems and associated equipment","Complies with applicable regulations","Applies relevant procedural knowledge"],
+ "KNO":["Demonstrates knowledge of relevant Operational Procedures","Demonstrates technical knowledge of aircraft systems and their effect on the safe operation of the flight","Demonstrates knowledge of procedures for operating a commercial aircraft under IFR","Displays an appropriate level of background knowledge","Applies knowledge effectively to practical scenarios","Displays ability to locate required information using all reference material"],
+ "FPM-A":["Controls the aircraft using automation with accuracy and smoothness as appropriate to the situation","Detects deviations from the desired aircraft trajectory and takes appropriate action","Contains the aircraft within the normal flight envelope","Manages the flight path to achieve optimum operational performance","Maintains the desired flight path during flight using automation whilst managing other tasks and distractions","Selects appropriate level and mode of automation in a timely manner considering phase of flight and workload","Effectively monitors automation, including engagement and automatic mode transitions"],
+ "FPM-M":["Controls the aircraft manually with accuracy and smoothness as appropriate to the situation","Detects deviations from the desired aircraft trajectory and takes appropriate action","Contains the aircraft within the normal flight envelope","Controls the aircraft safely using only the relationship between aircraft attitude, speed and thrust","Manages the flight path to achieve optimum operational performance","Maintains the desired flight path during manual flight whilst managing other tasks and distractions","Selects appropriate level and mode of flight guidance systems in a timely manner considering phase of flight and workload","Effectively monitors flight guidance systems including engagement and automatic mode transitions"],
+ "COM":["Ensures the recipient is ready and able to receive the information","Selects appropriately what, when, how and with whom to communicate","Conveys messages clearly, accurately and concisely","Confirms that the recipient correctly understands important information","Listens actively and demonstrates understanding when receiving information","Asks relevant and effective questions","Adheres to standard radiotelephone phraseology and procedures","Accurately reads and interprets required company and flight documentation","Completes accurate reports as required by operating procedures","Correctly interprets non-verbal communication","Uses eye contact, body movement and gestures that are consistent with and support verbal messages"],
+ "L&T":["Understands and agrees with the crew's roles and objectives","Creates an atmosphere of open communication and encourages team participation","Uses initiative and gives directions when required","Admits mistakes and takes responsibility","Anticipates and responds appropriately to other crew members' needs","Carries out instructions when directed","Communicates relevant concerns and intentions","Gives and receives feedback constructively","Confidently intervenes when important for safety","Demonstrates empathy and shows respect and tolerance for other people","Engages others in planning and allocates activities fairly and appropriately according to abilities","Addresses and resolves conflicts and disagreements in a constructive manner","Projects self-control in all situations"],
+ "PSDM":["Seeks accurate and adequate information from appropriate sources","Identifies and verifies what and why things have gone wrong","Employs proper problem-solving strategies","Perseveres in working through problems without reducing safety","Uses appropriate and timely decision-making processes","Sets priorities appropriately","Identifies and considers options effectively","Monitors, reviews, and adapts decisions as required","Identifies and manages risks effectively","Improvises when faced with unforeseeable circumstances to achieve the safest outcome"],
+ "SA":["Identifies and assesses accurately the state of the aircraft and its systems","Identifies and assesses accurately the aircraft's vertical and lateral position, and its anticipated flight path","Identifies and assesses accurately the general environment as it may affect the operation","Keeps track of time and fuel","Maintains awareness of the people involved in or affected by the operation and their capacity to perform as expected","Anticipates accurately what could happen, plans and stays ahead of the situation","Develops effective contingency plans based upon potential threats","Identifies and manages threats to the safety of the aircraft and people","Recognizes and effectively responds to indications of reduced situation awareness"],
+ "WLM":["Maintains self-control in all situations","Plans, prioritizes and schedules tasks effectively","Manages time efficiently when carrying out tasks","Offers and accepts assistance, delegates when necessary and asks for help early","Reviews, monitors and cross-checks actions conscientiously","Verifies that tasks are completed to the expected outcome","Manages and recovers from interruptions, distractions, variations and failures effectively"]};
+const BI_NO="✗ Not demonstrated: ",biMode={};
+function biState(cur,b){for(const l of cur.split("\n")){const t=l.trim();if(t===b||t==="✓ "+b)return "+";if(t===BI_NO+b)return "-"}return ""}
+function biLabel(cur,b){const st=biState(cur,b);return (st==="+"?"✓ ":st==="-"?"✗ ":"")+b}
+function biSelect(gk,c,ok){const cur=(S[gk][c][ok]||"");const L=BI[c]||[];if(!L.length)return "";const key=`${gk}.${c}.${ok}`,m=biMode[key]||"+";
+ return `<div class="birow"><div class="seg bimode">${[["+","✓"],["-","✗"]].map(([v,l])=>`<button type="button" data-bimode="${h(key)}" data-val="${v}" class="${m===v?"on "+(v==="+"?"bi-yes":"bi-no"):""}" aria-label="${v==="+"?"Demonstrated":"Not demonstrated"}">${l}</button>`).join("")}</div><select class="bi" data-bi="${h(key)}" aria-label="Add behavioural indicator"><option value="">${m==="+"?"＋ Demonstrated…":"＋ Not demonstrated…"}</option>${L.map((b,i)=>`<option value="${i}">${h(biLabel(cur,b))}</option>`).join("")}</select></div>`}
 const GRADES=[["1","1 Excellent"],["2","2 Very good"],["3","3 Good"],["4","4 Min. acceptable"],["5","5 Improvement req."]];
 const GRADE_WORD={"1":"Excellent","2":"Very good","3":"Good","4":"Minimum acceptable","5":"Improvement required"};
 const CODES=["+","-","P","D","STD","N/O","-> rec","-> no rec"];
@@ -769,7 +786,7 @@ function renderSec(){
  const part=parts(t).find(p=>p.id===sec);
  if(part){const gk=part.gk;if(t.summary==="CUFFS")return cuffsSummary();
   const pc=(c,k,ok)=>S.body===k?`<div class="pcell"><span class="lbl">${h(pilotLabel(k))}</span><span class="muted" style="font-size:13px">Not assessed</span></div>`:`<div class="pcell"><div class="ph"><span class="lbl">${h(pilotLabel(k))}${pilotName(k)?" · "+h(pilotName(k)):""}</span>${seg(`${gk}.${c}.${k}`,GRADES,"grade")}</div>
-    ${autoList(c,k)}<textarea class="obs" id="f-${gk}.${h(c)}.${ok}" data-k="${gk}.${h(c)}.${ok}" rows="2" placeholder="Key observations">${h(S[gk][c][ok]||"")}</textarea></div>`;
+    ${autoList(c,k)}${biSelect(gk,c,ok)}<textarea class="obs" id="f-${gk}.${h(c)}.${ok}" data-k="${gk}.${h(c)}.${ok}" rows="2" placeholder="Key observations">${h(S[gk][c][ok]||"")}</textarea></div>`;
   TG={cpt:tagged("cpt",part.secs),fo:tagged("fo",part.secs)};
   const rows=COMPS.map(([c,n])=>`<div class="grow"><div class="cname"><b>${h(c)}</b><span>${h(n)}</span></div>${pc(c,"cpt","obsCpt")}${pc(c,"fo","obsFo")}</div>`).join("");
   const kv=(label,inner)=>`<div class="kv"><span class="lbl" style="padding-top:8px">${label}</span>${inner("cpt")}${inner("fo")}</div>`;
@@ -878,6 +895,12 @@ app.addEventListener("input",e=>{
 app.addEventListener("change",async e=>{
  const el=e.target;
  if(el.dataset.chk){setP(S,el.dataset.chk,el.checked);dirty()}
+ if(el.dataset.bi){const v=el.value;el.value="";if(v==="")return;const key=el.dataset.bi,parts=key.split("."),gk=parts[0],ok=parts.pop(),c=parts.slice(1).join(".");
+  const b=BI[c][+v],m=biMode[key]||"+",ta=document.getElementById(`f-${key}`);let cur=(S[gk][c][ok]||"").replace(/\s+$/,"");const st=biState(cur,b);
+  const lines=cur?cur.split("\n").filter(l=>{const t=l.trim();return t!==b&&t!=="✓ "+b&&t!==BI_NO+b}):[];
+  if(st!==m)lines.push(m==="+"?"✓ "+b:BI_NO+b); // same mark again removes it; the other mark replaces it
+  cur=lines.join("\n");S[gk][c][ok]=cur;if(ta){ta.value=cur;autosize(ta)}
+  [...el.options].forEach((o,i)=>{if(i)o.textContent=biLabel(cur,BI[c][i-1])});dirty();return}
  if(el.id==="optPassport")lsSet("tre.pdfPassport",el.checked?"1":"0");
  if(el.dataset.addphoto&&el.files&&el.files[0]){const exId=el.dataset.addphoto;const f=el.files[0];el.value="";await addPhoto(exId,f)}
 });
@@ -886,6 +909,8 @@ app.addEventListener("pointerdown",e=>{if(e.target.closest("[data-ins]"))e.preve
 app.addEventListener("click",async e=>{
  const b=e.target.closest("button");if(!b)return;
  if(b.dataset.ins){insertCode(b.dataset.ins);return}
+ if(b.dataset.bimode){const key=b.dataset.bimode,v=b.dataset.val;biMode[key]=v;b.parentNode.querySelectorAll("button").forEach(x=>{x.className=x.dataset.val===v?"on "+(v==="+"?"bi-yes":"bi-no"):""});
+  const sel=b.closest(".birow").querySelector("select");sel.options[0].textContent=v==="+"?"＋ Demonstrated…":"＋ Not demonstrated…";return}
  if(b.dataset.act==="importloft"){$("#importFile").click();return}
  if(b.dataset.act==="mktrn"){if(!S.trainingDay){toast("Select the Training Day first");return}
   const src=S;await saveNow();const n=newSession("TRN_"+src.trainingDay);
@@ -991,7 +1016,7 @@ async function giveFile(filename,blob){
 }
 
 /* ---------------- PDF ---------------- */
-function pt(s){return String(s??"").replace(/[‘’‛]/g,"'").replace(/[“”]/g,'"').replace(/[–—]/g,"-").replace(/…/g,"...").replace(/→/g,"->").replace(/←/g,"<-").replace(/≤/g,"<=").replace(/≥/g,">=").replace(/[•●]/g,"-").replace(/✓/g,"v").replace(/[^\n\r\t\x20-\x7E -ÿ]/g,"?")}
+function pt(s){return String(s??"").replace(/[‘’‛]/g,"'").replace(/[“”]/g,'"').replace(/[–—]/g,"-").replace(/…/g,"...").replace(/→/g,"->").replace(/←/g,"<-").replace(/≤/g,"<=").replace(/≥/g,">=").replace(/[•●]/g,"-").replace(/✓/g,"+").replace(/✗/g,"x").replace(/[^\n\r\t\x20-\x7E -ÿ]/g,"?")}
 function blobToDataURL(b){return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsDataURL(b)})}
 function evidenceList(){const order=allItems().map(i=>i.id);return P.slice().sort((a,b)=>order.indexOf(a.exId)-order.indexOf(b.exId)||a.createdAt-b.createdAt).map((p,i)=>({...p,label:"E"+(i+1)}))}
 function fileBase(){const t=tpl();return `${S.date||"sin-fecha"}_${t.key}${S.fstdCode?"_"+S.fstdCode.replace(/[^\w-]+/g,""):""}`}
