@@ -294,7 +294,7 @@ const GRADE_WORD={"1":"Excellent","2":"Very good","3":"Good","4":"Minimum accept
 const CODES=["+","-","P","D","STD","N/O","-> rec","-> no rec"];
 const FLAGS=["REP","FREEZE"];
 const TAGS=["AOP","K","FPM-A","FPM-M","COM","L&T","PSDM","SA","WLM"];
-const PILOT_BLANK={indicators:"",name:"",crewcode:"",license:"",trir:"",trirUpdt:"",medical:"",medicalUpdt:"",passport:"",passportExp:"",techExam:"",elp:"",elpUpdt:"",attempt:"",outcome:"",failed:""};
+const PILOT_BLANK={indicators:"",name:"",crewcode:"",license:"",licType:"",trir:"",trirUpdt:"",medical:"",medicalUpdt:"",passport:"",passportExp:"",techExam:"",elp:"",elpUpdt:"",attempt:"",outcome:"",failed:""};
 
 const T={
  LPC:{key:"LPC",short:"RST 4 LPC",name:"RST 4 LPC",session:"RST 4 LPC",crew:false,
@@ -648,7 +648,8 @@ function exDefault(sc,it){
  return {cpt:{role:cpt,comp:"",notes:"",result:""},fo:{role:fo,comp:"",notes:"",result:""}};
 }
 function normalize(s){ // upgrade sessions saved by earlier versions
- ["cpt","fo"].forEach(k=>{s.pilots[k]={...PILOT_BLANK,...s.pilots[k]}});
+ ["cpt","fo"].forEach(k=>{s.pilots[k]={...PILOT_BLANK,...s.pilots[k]};const P=s.pilots[k],m=/^(.*?)[\s\/,-]*\b(ATPL|CPL)\s*$/i.exec(P.license||"");if(m&&!P.licType){P.license=m[1].trim();P.licType=m[2].toUpperCase()}});
+ if(s.crew==="with body")s.crew=s.body==="fo"?"FO body":s.body==="cpt"?"CPT body":"CPT / FO";
  COMPS.forEach(([c])=>{const g=s.grades[c]||(s.grades[c]={cpt:"",fo:""});if(g.obsCpt==null)g.obsCpt=g.obs||"";if(g.obsFo==null)g.obsFo=g.obs||"";delete g.obs});
  s.notes=s.notes||{};["cpt","fo"].forEach(k=>{if(s.notes[k]==null)s.notes[k]=""});
  if(T[s.type].parts){s.gradesT=s.gradesT||{};COMPS.forEach(([c])=>{if(!s.gradesT[c])s.gradesT[c]={cpt:"",fo:"",obsCpt:"",obsFo:""}})}
@@ -760,7 +761,7 @@ function renderSec(){
   const dateUpdt=(k,f,label)=>`<div class="field"><span class="lbl">${h(label)}</span><div class="pair"><input id="f-pilots.${k}.${f}" type="date" data-k="pilots.${k}.${f}" value="${h(S.pilots[k][f])}" aria-label="${h(label)}"><span class="updt"><span class="lbl">UPDT</span>${seg(`pilots.${k}.${f}Updt`,["YES","NO"])}</span></div>${expSpan(k,f)}</div>`;
   const elpSel=k=>{const v=S.pilots[k].elp;return `<div class="field"><span class="lbl">ELP</span><div class="pair"><select id="f-pilots.${k}.elp" data-k="pilots.${k}.elp" aria-label="ELP"><option value="" ${v?"":"selected"}>–</option>${["4","5","6"].map(x=>`<option value="${x}" ${v===x?"selected":""}>${x}</option>`).join("")}</select><span class="updt"><span class="lbl">UPDT</span>${seg(`pilots.${k}.elpUpdt`,["YES","NO"])}</span></div></div>`};
   const pilotCard=k=>`<div class="card" style="display:flex;flex-direction:column;gap:12px"><h3>Pilot · ${h(pilotLabel(k))}</h3>
-   <div class="grid">${inp(`pilots.${k}.name`,"Name")}${inp(`pilots.${k}.crewcode`,"Crewcode",{caps:true})}${inp(`pilots.${k}.license`,"License No / Type",{caps:true})}</div>
+   <div class="grid">${inp(`pilots.${k}.name`,"Name")}${inp(`pilots.${k}.crewcode`,"Crewcode",{caps:true})}<div class="field"><span class="lbl">Licence No</span><div class="pair"><input id="f-pilots.${k}.license" type="text" autocomplete="off" data-k="pilots.${k}.license" value="${h(S.pilots[k].license)}" autocapitalize="characters" aria-label="Licence No"><span class="updt">${seg(`pilots.${k}.licType`,["ATPL","CPL"])}</span></div></div></div>
    <div class="grid">${dateUpdt(k,"trir","TR/IR validity")}${dateUpdt(k,"medical","Medical expiry")}</div>
    <div class="grid">${inp(`pilots.${k}.passport`,"Passport No",{caps:true})}<div class="field">${inp(`pilots.${k}.passportExp`,"Passport expiry",{type:"date"})}${expSpan(k,"passportExp")}</div></div>
    <div class="grid">${inp(`pilots.${k}.techExam`,"Tech exam")}${elpSel(k)}${segField(`pilots.${k}.attempt`,"Attempt",["1st","2nd"])}</div>
@@ -796,7 +797,7 @@ function renderSec(){
    <div class="grid"><label class="field"><span class="lbl">Session</span><input value="${h(t.cu&&S.cuKind?"CU "+S.cuKind:t.session)}" readonly></label>
    ${inp("date","Date",{type:"date"})}${inp("fstdCode","FSTD & code",{caps:true})}${inp("examiner","Examiner / EFOS")}</div>
    <div class="grid">${segField("fstdType","FSTD type",["B737-800","B737-8200"])}
-   ${t.crew?segField("crew","Crew",["CPT / FO","CPT / CPT",["with body",'With "body"']]):t.cu?segField("cuKind","Check type",["LPC/OPC","LST/OPC"]):segField("body","Body (single trainee)",[["cpt","CPT is body"],["fo","FO is body"]])}</div></div>
+   ${t.crew?segField("crew","Crew",["CPT / FO","CPT / CPT","CPT body","FO body"]):t.cu?segField("cuKind","Check type",["LPC/OPC","LST/OPC"]):segField("body","Body (single trainee)",[["cpt","CPT is body"],["fo","FO is body"]])}</div></div>
   ${pilotCard("cpt")}${pilotCard("fo")}`;
  }
  if(sec==="setup"){
@@ -962,6 +963,7 @@ app.addEventListener("click",async e=>{
  const segEl=b.closest("[data-seg]");
  if(segEl&&b.dataset.val!==undefined){const path=segEl.dataset.seg;const cur=getP(S,path);const v=cur===b.dataset.val?"":b.dataset.val;setP(S,path,v);
   segEl.querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed",x.dataset.val===v));dirty();
+  if(path==="crew"){S.body=v==="CPT body"?"cpt":v==="FO body"?"fo":"";if(!v)S.crew="CPT / FO"} // crew choice sets who is body
   if(path==="crew"||path==="fstdType"||path==="body"||path==="cuKind")renderSession();
   if(/^sum\.weakest2?\./.test(path))refreshTD();
   if(/\.result$/.test(path)){const card=segEl.closest(".ex");if(card){const id=card.id.slice(3);card.classList.toggle("has-fail",!!hasFail(id));card.classList.toggle("has-notes",!hasFail(id)&&!!filled(id));updateNavCounts()}}
@@ -1148,8 +1150,8 @@ async function buildPDF(){
 function fmtD(d){return d?fmtDate(d):""}
 /* Competency tags in exercise notes: each line tagged with AOP, K/KNO, FPM-A, FPM-M, COM, L&T, PSDM, SA or WLM
    is shown under that competency for that pilot in the Summary, and printed with its exercise reference. */
-const TAGMAP={AOP:"AOP",APP:"AOP",K:"KNO",KNO:"KNO","FPM-A":"FPM-A","FPM-M":"FPM-M",COM:"COM","L&T":"L&T",PSDM:"PSDM",SA:"SA",WLM:"WLM"};
-const TAG_RE=/(^|[\s,;(\/])(FPM-A|FPM-M|L&T|PSDM|AOP|APP|KNO|COM|WLM|SA|K)(?=$|[\s,.;:)\/])/g;
+const TAGMAP={AOP:"AOP",K:"KNO",KNO:"KNO","FPM-A":"FPM-A","FPM-M":"FPM-M",COM:"COM","L&T":"L&T",PSDM:"PSDM",SA:"SA",WLM:"WLM"};
+const TAG_RE=/(^|[\s,;(\/])(FPM-A|FPM-M|L&T|PSDM|AOP|KNO|COM|WLM|SA|K)(?=$|[\s,.;:)\/])/g;
 let TG={cpt:{},fo:{}};
 function tagged(k,secs){
  const out={};COMPS.forEach(([c])=>out[c]=[]);
@@ -1184,7 +1186,7 @@ function refreshExp(){app.querySelectorAll("[data-exp]").forEach(el=>{const [k,f
 function pilotRows(inclPass){
  if(isTRN()){const p=k=>S.pilots[k];return [["NAME",k=>p(k).name],["CREWCODE",k=>p(k).crewcode],["LPC OUTCOME",k=>p(k).outcome],["LPC FAILED ITEMS",k=>p(k).failed],["WEAKEST COMPETENCY (LPC)",k=>S.body===k?"Body":S.sum.weakest[k]],["TRE BEHAVIOURAL INDICATORS",k=>p(k).indicators],["TRAINING SCENARIO (EFOS)",k=>tpl().dayName]]}
  const p=k=>S.pilots[k];const u=v=>v?"  |  UPDT: "+v:"";const x=(k,f)=>{const a=expiry(S.pilots[k][f]);return a?"  |  (!) "+a.text.toUpperCase():""};
- return [["NAME",k=>p(k).name],["CREWCODE",k=>p(k).crewcode],["LICENSE No / TYPE",k=>p(k).license],
+ return [["NAME",k=>p(k).name],["CREWCODE",k=>p(k).crewcode],["LICENCE No / TYPE",k=>[p(k).license,p(k).licType].filter(Boolean).join(" ")],
   ["TR/IR VALIDITY",k=>fmtD(p(k).trir)+u(p(k).trirUpdt)+x(k,"trir")],["MEDICAL EXPIRY",k=>fmtD(p(k).medical)+u(p(k).medicalUpdt)+x(k,"medical")],
   ...(inclPass?[["PASSPORT No",k=>p(k).passport]]:[]),["PASSPORT EXPIRY",k=>fmtD(p(k).passportExp)+x(k,"passportExp")],
   ["TECH EXAM",k=>p(k).techExam],["ELP",k=>(p(k).elp||"")+u(p(k).elpUpdt)],["ATTEMPT",k=>p(k).attempt],["OUTCOME",k=>p(k).outcome],["FAILED ITEMS",k=>p(k).failed]];
