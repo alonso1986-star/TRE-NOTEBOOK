@@ -218,6 +218,7 @@ table.setup{border-collapse:collapse;width:100%;min-width:560px;font-size:13px}
 table.setup th,table.setup td{border-bottom:1px solid var(--line);padding:7px 8px;text-align:left;vertical-align:top}
 table.setup th{font-family:var(--f-mono);font-weight:500;color:var(--muted);white-space:nowrap}
 table.setup td.on{background:var(--accent-soft)}
+table.setup.single{min-width:0}table.setup.single td{font-family:var(--f-mono);font-size:13px}
 
 /* export */
 .issues{display:flex;flex-direction:column;gap:6px;margin:0;padding:0;list-style:none}
@@ -294,7 +295,7 @@ const GRADE_WORD={"1":"Excellent","2":"Very good","3":"Good","4":"Minimum accept
 const CODES=["+","-","P","D","STD","N/O","-> rec","-> no rec"];
 const FLAGS=["REP","FREEZE"];
 const TAGS=["AOP","K","FPM-A","FPM-M","COM","L&T","PSDM","SA","WLM"];
-const PILOT_BLANK={indicators:"",name:"",crewcode:"",license:"",licType:"",trir:"",trirUpdt:"",medical:"",medicalUpdt:"",passport:"",passportExp:"",techExam:"",elp:"",elpUpdt:"",attempt:"",outcome:"",failed:""};
+const PILOT_BLANK={indicators:"",name:"",crewcode:"",license:"",licType:"",trir:"",trirUpdt:"",medical:"",medicalUpdt:"",passport:"",passportExp:"",techExam:"",elearn:"",toldg:"",elp:"",elpUpdt:"",attempt:"",outcome:"",failed:""};
 
 const T={
  LPC:{key:"LPC",short:"RST 4 LPC",name:"RST 4 LPC",session:"RST 4 LPC",crew:false,
@@ -567,6 +568,43 @@ T.CUCHK={key:"CUCHK",cu:true,students:true,noTD:true,crew:false,short:"CU CHECK"
    J("D1","Raw data ILS RW28L to landing",["3.8.3.1"],"Reposition PIZSA or vectors to a 12 nm intercept, F5 2500 ft, A/P and A/T engaged. ±½ scale LOC and G/S. Early configuration is acceptable.")]}]};
 T.CUCHK.sections.find(sc=>sc.id==="k5").items.forEach((it,n)=>it.code="C"+(n+1)); // RHS shown in Examiner Profiles order (EFATO first); ids kept
 T.CUCHK.sections.filter(sc=>sc.id==="k3"||sc.id==="k4").forEach(sc=>sc.items.forEach(it=>it.swap=true)); // Student 2 panel on the left while PF in the LHS
+/* ---------------- 737-8200 differences training ---------------- */
+const MX=(code,name,who,note)=>({id:code,code,name,refs:[],who,...(note?{note}:{})});
+T.MAX={key:"MAX",max:true,crew:false,parts:[],short:"MAX DIFF",name:"B737-8200 Differences",session:"B737-8200 DIFFERENCES TRAINING",summary:"MAX",
+ timing:"Brief 1:00 · Sim 2:00 per crew · Debrief 1:00 · Instructor Notes rev 6.0",
+ setup:[{title:"B737-8200 Differences – Simulator setup",ref:"Instructor Notes rev 6.0, p.10",single:true,rows:[
+  ["POSITION","EIDW tug release point H (use HOLD H), ready for engine start"],
+  ["ACFT SET","ZFW 55 · FUEL 12 · CG 24.4 · Fuel Freeze ON"],
+  ["ENV.","RW28L 250/7 OVC040 14/9 Q1013 (DRY RW) (cloud tops 4500 ft)"],
+  ["FMC","RTE: RYR38 EIDW/28L LIFFY 7A LIFFY DCT BAGSO BAGSO 2X ILS 28L/EIDW\nPERF: CI 6 · RES 2.7 · ZFW 55 · CRZ FL100 · CRZ/AV. WIND 190/7\nN1 LIMIT: OAT 14 · R-TO-1 · ATRT 37°\nTAKEOFF: F5 · CG 24.4 · TRIM 5.5 · SPEEDS 140, 140, 146\nFIX p1: DUBX4 · FIX p2: RW28L (4/10 nm ring)"],
+  ["AIRCRAFT","MCP: CRS 278 · HDG 278 · Stop FL90\nMFRA 1550 · Transponder 1146 · IDW 111.35 · DUB 114.9"],
+  ["CLEARANCE","Ryanair 38 is cleared to Dublin, via LIFFY 7A departure. Squawk 1146."],
+  ["FREQUENCIES","DUB TWR 118.6 · DUB CTL 132.58"],
+  ["NOTES","Save an FMC snapshot for later exercises. TOTAL reset clears malfunctions and latched faults (it does not reset the environment). Idle thrust moves the aircraft: brakes on after repositions."]]}],
+ admin:["eLearning certificate presented by both pilots (if not: fly the session but do NOT submit the EFOS Training Record)","FCL.060: 3 take-offs and landings completed by each pilot","EFOS Training Record completed"],
+ sections:[
+  {id:"m1",nav:"Ground",title:"Familiarisation, start & taxi",sub:"EIDW · HOLD H · fuel freeze ON · RW28L LIFFY 7A",def:{},items:[
+   MX("G1","Cockpit familiarisation","","Master lights TEST, Elevator Jam Landing Assist panel, gear lever (no OFF), R-TO-1/R-TO-2, AUX display clock, VSD switch, MAINT light."),
+   MX("G2","Engine start & taxi","","LEAP-1B: slower stabilised idle, BRM, EOS/TCMA test. Moves with idle thrust: carbon brakes technique.")]},
+  {id:"m2",nav:"S1–2 · 1st pilot",title:"Scenarios 1–2 · first pilot",sub:"CPT / FO: FO PF · same rank: pilot 1 PF from their own seat",def:{},items:[
+   MX("G3","Take-off & climb – manual, A/T engaged","A","LIFFY 7A. UP speed in the climb; trim out the forces after changing the flight path. Level FL90: N1 ≈8% lower than the NG."),
+   MX("A1","S1 – Full stall & MCAS","A","A/P & A/T off, FDs on, FL90, UP speed. No trim below UP speed; recover at EFS activation (training only); no trim until MCAS reversal. Recover ≥FL80. Line ops: recover at the first indication."),
+   MX("A2","S2 – Runaway stabiliser NNC & manual trim","A","Touchdrill first. STAB RUNAWAY nose up: memory items keeping flight path control; main electric trim before CUTOUT. Techniques: one handle, two handles (PM), two-pilot effort."),
+   MX("A3","S2 – Accel/decel 210–300–210 kt, manual ILS 28L & ATC go-around","A","Anticipate trim for speed/thrust/configuration; configure early. ≈53% N1 on final. G/A: 80–85% N1, nose-down trim while accelerating. Stow trim handles, TOTAL reset.")]},
+  {id:"m3",nav:"S1–2 · 2nd pilot",title:"Scenarios 1–2 · second pilot",sub:"CPT / FO: CPT PF · same rank: pilot 2 PF after the seat swap",def:{},items:[
+   MX("B1","S1 – Full stall & MCAS","B","A/P & A/T off, FDs on, 5000 ft, UP speed. No trim below UP speed; recover at EFS activation (training only); no trim until MCAS reversal. Recover ≥5000 ft. Line ops: recover at the first indication."),
+   MX("B2","S2 – Runaway stabiliser NNC & manual trim","B","Starts at 5000 ft. After the memory items the instructor sets up systems and approach; the crew resumes at the deferred landing checklist."),
+   MX("B3","S2 – Accel/decel 210–300–210 kt, manual ILS 28L & ATC go-around","B","Anticipate trim for speed/thrust/configuration; configure early. ≈53% N1 on final. G/A: 80–85% N1, nose-down trim while accelerating. Stow trim handles, TOTAL reset.")]},
+  {id:"m4",nav:"S3–5 · once",title:"Scenarios 3–5 · once per crew",sub:"CPT / FO: S3–S4 CPT PF, S5 FO PF · same rank: pilot 2 PF, no more seat changes",def:{},items:[
+   MX("C1","S3 – Cross FCC trim monitor demo & landing","B","CMD A, FCC STAB RUNAWAY nose down: A/P A disengages, stopped after 1.3 s, CMD B available, SPEED TRIM FAIL. 6 nm ILS 28L full stop: STAB OUT OF TRIM below 30 kt GS (report to MAINTROL). TOTAL reset."),
+   MX("C2","S4 – Airspeed unreliable on take-off (AOA high, CPT side)","B","15° pitch, gear up, memory items at acceleration height; ATC and block altitude. Freeze at step 7: which source is reliable and why. Nuisance stick shaker CB: decision and P18/P6 location method."),
+   MX("C3","S4 – Manual ILS 28L & go-around, airspeed unreliable","B","Review the G/A in the NNC: TO/GA, pitch and N1 from the tables (pre-sim figures). Above 400 ft select LVL CHG (call “LNAV/HDG SEL, LVL CHG, bug up”) so pitch FD guidance shows on the reliable side. Clear at MAA, TOTAL reset, reset the CB."),
+   MX("C4","S5 – Engine failure after T/O with LRD & cabin smoke","S5","ENG 2 flameout at gear up; CC PAA at 400 ft: smoke in the cabin. Engine Fire / Severe Damage memory items (RYR-18(P2), EASA SIB 2025-06); oxygen if smoke in the flight deck. Freeze at MSA and discuss. PAA: ‘Problem: There is a significant amount of smoke in the cabin. Some passengers noticed flames from the back of the No 2 Engine on takeoff but there is no indication of a fire. Action taken: We are remaining in our seats and have made a reassurance PA. Additional Information: The Smoke does not appear to be increasing but some passengers are having difficulty breathing.’")]},
+  {id:"m5",nav:"Additional",title:"Additional exercises & FCL.060",sub:"Use any spare time",def:{},items:[
+   MX("D1","A/P roll saturation alerts & enhanced bank angle warning",""),
+   MX("D2","Additional take-offs & landings (FCL.060)","","3 take-offs and landings per pilot before completing the EFOS Training Record.")]}]};
+function maxPF(it,crew){if(it.who==="S5")return "fo";if(it.who==="A")return crew==="CPT / FO"?"fo":"cpt";if(it.who==="B")return crew==="CPT / FO"?"cpt":"fo";return ""}
+function maxRoles(s){const t=T[s.type];if(!t.max)return;t.sections.forEach(sc=>sc.items.forEach(it=>{const pf=maxPF(it,s.crew||"CPT / FO");if(!pf)return;const e=s.ex[it.id];["cpt","fo"].forEach(k=>e[k].role=k===pf?"PF":"PM")}))}
 function loftPack(){try{return JSON.parse(localStorage.getItem("tre.cuLoftPack")||"null")}catch(e){return null}}
 function loftScenario(key){const pk=loftPack();const v=((S&&S.loft)||{})[key]||"";return pk&&v?pk.scenarios.find(x=>String(x.n)===String(v)):null}
 function loftCard(key){
@@ -584,7 +622,11 @@ function cuGradeAlerts(){const t=tpl();if(!t.cu||!t.summary||t.summary==="CUFFS"
   const five=bad.some(([c])=>S.grades[c][k]==="5");
   out.push(`${pilotLabel(k)}: grade ${five?"5 (Improvement required)":"4 (Minimum acceptable)"} in ${bad.map(b=>b[0]).join(", ")}. ${five?"Training stops; refer the file to the Chief Instructor.":"Refer the file to the Chief Instructor for review."}${t.summary==="CULOFT"?" Not recommended for the CU check; refer to SI and CI.":""}`)});return out}
 function cuffsSummary(){
- const t=tpl();const card=k=>{const d=sdrList(k,"D"),r=sdrList(k,"R");
+ const t=tpl();if(t.max){const card=k=>`<div class="card" style="display:flex;flex-direction:column;gap:10px"><h3>${h(pilotLabel(k))}${pilotName(k)?" · "+h(pilotName(k)):""}</h3>
+   <span class="muted" style="font-size:13px">eLearning: ${h(S.pilots[k].elearn||"–")} · T/O & landings: ${h(S.pilots[k].toldg||"–")}/3</span>
+   <label class="field"><span class="lbl">Comments (EFOS Training Record)</span>${ta(`notes.${k}`,"",5)}</label></div>`;
+  return `<div class="sec-head"><h2>Summary & comments</h2><span class="sub">Differences training · no grading</span></div>${card("cpt")}${card("fo")}${exportCard()}`}
+ const card=k=>{const d=sdrList(k,"D"),r=sdrList(k,"R");
   return `<div class="card" style="display:flex;flex-direction:column;gap:10px"><h3>${h(pilotLabel(k))}${pilotName(k)?" · "+h(pilotName(k)):""}</h3>
    <span class="tally" style="font-size:13px">${sdrCount(k)}</span>
    ${d.length?`<div><span class="lbl">Deferred</span><ul class="auto">${d.map(x=>`<li><span class="xr">${h(x.code)}</span>${h(x.name)}</li>`).join("")}</ul></div>`:""}
@@ -636,7 +678,7 @@ function newSession(type){
  const s={id:uid(),type,createdAt:Date.now(),updatedAt:Date.now(),date:today(),fstdCode:"",fstdType:"",crew:t.crew?"CPT / FO":"",examiner:"",
   pilots:{cpt:pilot(),fo:pilot()},ex:{},repeats:"",grades:{},body:"",debrief:{well:"",diff:""},sum:{improve:{cpt:"",fo:""},indRev:{cpt:"",fo:""},weakest2:{cpt:"",fo:""},weakest:{cpt:"",fo:""},trainingDay:{cpt:"",fo:""},outcome:{cpt:"",fo:""},failed:{cpt:"",fo:""}},admin:{},notes:{general:"",cpt:"",fo:""}};
  t.sections.forEach(sc=>sc.items.forEach(it=>{s.ex[it.id]=exDefault(sc,it)}));
- if(type==="LPC"||type==="CUCHK")s.lpc3=true;normalize(s);
+ if(type==="LPC"||type==="CUCHK")s.lpc3=true;if(t.max){s.crew="CPT / FO";s.fstdType="B737-8200"}normalize(s);maxRoles(s);
  COMPS.forEach(([c])=>s.grades[c]={cpt:"",fo:"",obsCpt:"",obsFo:""});
  if(t.parts){s.gradesT={};COMPS.forEach(([c])=>s.gradesT[c]={cpt:"",fo:"",obsCpt:"",obsFo:""})}
  return s;
@@ -686,7 +728,7 @@ function setSave(t,c){const el=$("#saveState");if(el){el.textContent=t;el.classN
 const app=$("#app");
 function render(){S?renderSession():renderHome()}
 
-function pilotLabel(k){if(S&&T[S.type]&&T[S.type].students)return k==="cpt"?"Student 1":"Student 2";const b=S.body===k?" (body)":"";if(k==="cpt")return (S.crew==="CPT / CPT"?"CPT (LHS)":"CPT")+b;return (S.crew==="CPT / CPT"?"CPT (RHS)":"FO")+b}
+function pilotLabel(k){if(S&&T[S.type]&&T[S.type].students)return k==="cpt"?"Student 1":"Student 2";if(S&&T[S.type]&&T[S.type].max)return S.crew==="CPT / CPT"?(k==="cpt"?"CPT 1":"CPT 2"):S.crew==="FO / FO"?(k==="cpt"?"FO 1":"FO 2"):(k==="cpt"?"CPT":"FO");const b=S.body===k?" (body)":"";if(k==="cpt")return (S.crew==="CPT / CPT"?"CPT (LHS)":"CPT")+b;return (S.crew==="CPT / CPT"?"CPT (RHS)":"FO")+b}
 function trainee(){return S.body==="cpt"?"fo":S.body==="fo"?"cpt":""}
 function pilotName(k){return (S.pilots[k].name||"").trim()}
 function firstName(k){return pilotName(k).split(/\s+/)[0]||""}
@@ -708,6 +750,7 @@ async function renderHome(){
     <div class="trn-days">${Object.keys(TRN_DATA).map(d=>`<button data-new="TRN_${d[0]}" title="${d}">${d[0]}</button>`).join("")}</div></div>
    <div class="newbtn" style="grid-column:1/-1"><span class="plus">+ CU</span><span class="t">Command Upgrade</span><span class="d">Student 1 / Student 2 · FFS 1–3 with S/D/R, CRM LOFT with the 20 scenarios, CU check with RHS</span>
     <div class="trn-days cu-days"><button data-new="CU1">FFS 1</button><button data-new="CU2">FFS 2</button><button data-new="CU3">FFS 3</button><button data-new="CULOFT">LOFT</button><button data-new="CUCHK">Check</button></div></div>
+   <button class="newbtn" data-new="MAX" style="grid-column:1/-1"><span class="plus">+ B737-8200</span><span class="t">MAX Differences</span><span class="d">Familiarisation, stall &amp; MCAS, runaway stabiliser, cross FCC trim monitor, airspeed unreliable, engine failure with cabin smoke · CPT/FO, CPT/CPT or FO/FO</span></button>
   </div>
   <section class="hero" style="margin-top:6px"><span class="lbl">Sessions saved on this device</span></section>
   <div class="slist">${rows||`<div class="empty">No sessions yet. Start an LPC, OPC or Training Day above; it saves automatically as you type.</div>`}</div>
@@ -782,6 +825,18 @@ function renderSec(){
     <div class="grid">${segField("fstdType","FSTD type",["B737-800","B737-8200"])}</div></div>
    ${cuCard("cpt")}${cuCard("fo")}`;
   }
+  if(t.max){
+   const mCard=k=>`<div class="card" style="display:flex;flex-direction:column;gap:12px"><h3>Pilot · ${h(pilotLabel(k))}</h3>
+    <div class="grid">${inp(`pilots.${k}.name`,"Name")}${inp(`pilots.${k}.crewcode`,"Crewcode",{caps:true})}</div>
+    <div class="grid">${segField(`pilots.${k}.elearn`,"eLearning certificate",["YES","NO"])}${segField(`pilots.${k}.toldg`,"T/O & landings (FCL.060)",["1","2","3"])}</div></div>`;
+   return `<div class="sec-head"><h2>Session & pilots</h2><span class="sub mono">${h(t.timing)}</span></div>
+   <div class="card" style="display:flex;flex-direction:column;gap:12px"><h3>Session</h3>
+    <div class="grid"><label class="field"><span class="lbl">Session</span><input value="${h(t.session)}" readonly></label>
+    ${inp("date","Date",{type:"date"})}${inp("fstdCode","FSTD & code",{caps:true})}${inp("examiner","Instructor / EFOS")}</div>
+    <div class="grid">${segField("crew","Crew",["CPT / FO","CPT / CPT","FO / FO"])}</div>
+    <p class="muted" style="margin:0;font-size:13px">PF/PM is preset from the crew: scenarios 1–2 for each pilot from their own seat; 3–5 once per crew (CPT / FO: S3–S4 CPT, S5 FO; same rank: pilot 2 after the seat swap). Changing the crew resets PF/PM.</p></div>
+   ${mCard("cpt")}${mCard("fo")}`;
+  }
   if(t.summary==="TRN"){
    return `<div class="sec-head"><h2>Session & pilots</h2><span class="sub mono">${h(t.timing)}</span></div>
    ${t.day==="F"&&S.fstdType==="B737-800"?`<div class="banner bad">Training Day F is only available in -8200 simulators.</div>`:""}
@@ -802,8 +857,9 @@ function renderSec(){
  }
  if(sec==="setup"){
   const col=S.fstdType==="B737-800"?1:S.fstdType==="B737-8200"?2:0;
-  return `<div class="sec-head"><h2>Sim setup</h2><span class="sub">Read-only reference${col?" · "+h(S.fstdType)+" highlighted":""}</span></div>`+
-  t.setup.map(st=>`<div class="card" style="display:flex;flex-direction:column;gap:8px"><h3>${h(st.title)}</h3><span class="muted" style="font-size:12px">Reference: ${h(st.ref)}</span>
+  return `<div class="sec-head"><h2>Sim setup</h2><span class="sub">Read-only reference${col&&!t.setup.every(x=>x.single)?" · "+h(S.fstdType)+" highlighted":""}</span></div>`+
+  t.setup.map(st=>st.single?`<div class="card" style="display:flex;flex-direction:column;gap:8px"><h3>${h(st.title)}</h3><span class="muted" style="font-size:12px">Reference: ${h(st.ref)}</span>
+   <div class="tscroll"><table class="setup single"><tbody>${st.rows.map(r=>`<tr><th>${h(r[0])}</th><td>${r[1].split("\n").map(h).join("<br>")}</td></tr>`).join("")}</tbody></table></div></div>`:`<div class="card" style="display:flex;flex-direction:column;gap:8px"><h3>${h(st.title)}</h3><span class="muted" style="font-size:12px">Reference: ${h(st.ref)}</span>
    <div class="tscroll"><table class="setup"><thead><tr><th></th><th>-800</th><th>-8200</th></tr></thead><tbody>${st.rows.map(r=>`<tr><th>${h(r[0])}</th><td class="${col===1?"on":""}">${h(r[1])}</td><td class="${col===2?"on":""}">${h(r[2])}</td></tr>`).join("")}</tbody></table></div></div>`).join("");
  }
  const s=t.sections.find(x=>x.id===sec);
@@ -813,7 +869,7 @@ function renderSec(){
    (s.repeats?`<div class="card ex"><div class="ex-head"><span class="ex-name">REPEATS</span></div><div class="guide">${h(t.repeatsNote)}</div><label class="field"><span class="lbl">Item / Pilot / Result</span>${ta("repeats","e.g. F6 EFATO / FO / repeated -> PASS",3)}</label></div>`:"");
  }
  const part=parts(t).find(p=>p.id===sec);
- if(part){const gk=part.gk;if(t.summary==="CUFFS")return cuffsSummary();
+ if(part){const gk=part.gk;if(t.summary==="CUFFS"||t.summary==="MAX")return cuffsSummary();
   const pc=(c,k,ok)=>S.body===k?`<div class="pcell"><span class="lbl">${h(pilotLabel(k))}</span><span class="muted" style="font-size:13px">Not assessed</span></div>`:`<div class="pcell"><div class="ph"><span class="lbl">${h(pilotLabel(k))}${pilotName(k)?" · "+h(pilotName(k)):""}</span>${seg(`${gk}.${c}.${k}`,GRADES,"grade")}</div>
     ${autoList(c,k)}${biSelect(gk,c,ok)}<textarea class="obs" id="f-${gk}.${h(c)}.${ok}" data-k="${gk}.${h(c)}.${ok}" rows="2" placeholder="Key observations">${h(S[gk][c][ok]||"")}</textarea>${PHRASES[c]?`<div class="draftbar"><button type="button" class="btn small" data-draft="${h(gk)}.${h(c)}.${k}">✎ EFOS draft</button><button type="button" class="btn small" data-copydraft="f-${gk}.${h(c)}.${ok==="obsCpt"?"draftCpt":"draftFo"}">Copy</button></div><textarea class="obs draft" id="f-${gk}.${h(c)}.${ok==="obsCpt"?"draftCpt":"draftFo"}" data-k="${gk}.${h(c)}.${ok==="obsCpt"?"draftCpt":"draftFo"}" rows="2" placeholder="EFOS draft (generated from grade + indicators, editable)">${h(S[gk][c][ok==="obsCpt"?"draftCpt":"draftFo"]||"")}</textarea>`:""}</div>`;
   TG={cpt:tagged("cpt",part.secs),fo:tagged("fo",part.secs)};
@@ -853,7 +909,7 @@ function renderSec(){
  }
  if(sec==="cierre"){
   return `<div class="sec-head"><h2>Closing</h2><span class="sub">Admin checklist</span></div>
-  <div class="card">${t.admin.map((a,i)=>`<label class="check"><input type="checkbox" id="adm-${i}" data-chk="admin.a${i}" ${S.admin["a"+i]?"checked":""}><span>${h(a)}</span></label>`).join("")}</div>`;
+  <div class="card">${t.admin.map((a,i)=>`<label class="check"><input type="checkbox" id="adm-${i}" data-chk="admin.a${i}" ${S.admin["a"+i]?"checked":""}><span>${h(a)}</span></label>`).join("")}</div>${t.max?exportCard():""}`;
  }
  return "";
 }
@@ -890,24 +946,25 @@ function issues(){
  if(S.type==="CULOFT")["l1","l2"].forEach((k,i)=>{if(!S.loft[k])out.push(`LOFT scenario not selected for Student ${i+1}.`)});
  ["cpt","fo"].forEach(k=>{const p=S.pilots[k],l=pilotLabel(k);
   if(!p.name.trim())out.push(`${l} name is missing.`);
-  if(!p.elp&&S.body!==k&&!isTRN()&&!(tpl().cu&&tpl().summary!=="LPC"))out.push(`${l} ELP is missing.`)});
+  if(!p.elp&&S.body!==k&&!isTRN()&&!tpl().max&&!(tpl().cu&&tpl().summary!=="LPC"))out.push(`${l} ELP is missing.`);
+  if(tpl().max){if(p.elearn!=="YES")out.push(`${l}: eLearning certificate not confirmed (do NOT submit the EFOS Training Record without it).`);if(p.toldg!=="3")out.push(`${l}: FCL.060 3 take-offs and landings not confirmed.`)}});
  ["cpt","fo"].forEach(k=>{const f=allItems().filter(it=>S.ex[it.id][k].result==="FAIL").map(it=>it.code);if(f.length)out.push(`${pilotLabel(k)}: FAIL marked on ${f.join(", ")}. Check Failed items, Repeats and FEG 5.10.3 grading.`)});
  expiryAlerts().forEach(a=>out.push(`${a.who}: ${a.what} ${a.text} (${fmtDate(a.date)}). Tell the crew member.`));
  const items=allItems();const empty=items.filter(i=>!filled(i.id));
  if(empty.length)out.push(`${empty.length} of ${items.length} exercises have no notes (they will print empty; write N/O if not done).`);
- const noRole=items.filter(i=>!S.ex[i.id].cpt.role&&!S.ex[i.id].fo.role&&filled(i.id));
+ const noRole=items.filter(i=>!S.ex[i.id].cpt.role&&!S.ex[i.id].fo.role&&filled(i.id)&&!(tpl().max&&!i.who));
  if(noRole.length)out.push(`No PF/PM ticked on: ${noRole.map(i=>i.code||i.name).join(", ")}.`);
  return out;
 }
-function issuesHTML(is){return is.length?is.map(x=>`<li>${h(x)}</li>`).join(""):`<li class="ok">Everything needed for the analysis is filled in.</li>`}
+function issuesHTML(is){return is.length?is.map(x=>`<li>${h(x)}</li>`).join(""):`<li class="ok">Everything is filled in.</li>`}
 function refreshIssues(){const ul=document.querySelector("#exportCard .issues");if(ul&&S)ul.innerHTML=issuesHTML(issues())}
 function exportCard(){
  const is=issues();
- return `<div class="card" id="exportCard" style="display:flex;flex-direction:column;gap:12px"><h3>Export to Claude</h3>
+ return `<div class="card" id="exportCard" style="display:flex;flex-direction:column;gap:12px"><h3>Export to PDF</h3>
   <ul class="issues">${issuesHTML(is)}</ul>
-  <label class="check"><input type="checkbox" id="optPassport" ${lsGet("tre.pdfPassport")==="1"?"checked":""}><span>Include passport number in the PDF</span></label>
-  <div class="foot"><button class="btn primary" data-act="pdf">Export to Claude</button><button class="btn" data-act="copy">Copy notes as text</button></div>
-  <p class="muted" style="margin:0;font-size:14px">Creates the session PDF (all exercises, summary, checklist and photo annex) and opens the Share sheet: choose the <b>Claude</b> app to attach it to a new chat and ask for the competency analysis per pilot and the general comment.</p>
+  ${tpl().max?"":`<label class="check"><input type="checkbox" id="optPassport" ${lsGet("tre.pdfPassport")==="1"?"checked":""}><span>Include passport number in the PDF</span></label>`}
+  <div class="foot"><button class="btn primary" data-act="pdf">Export to PDF</button><button class="btn" data-act="copy">Copy notes as text</button></div>
+  <p class="muted" style="margin:0;font-size:14px">Creates the session PDF (all exercises, summary, checklist and photo annex) and opens the Share sheet to save it or send it.</p>
   <div id="exportMsg"></div></div>`;
 }
 
@@ -953,7 +1010,7 @@ app.addEventListener("click",async e=>{
   ["cpt","fo"].forEach(k=>{const a=src.pilots[k];Object.assign(n.pilots[k],{name:a.name,crewcode:a.crewcode,outcome:a.outcome,failed:a.failed});n.sum.weakest[k]=src.sum.weakest[k]||""});
   S=n;P=[];sec="datos";await saveNow();lsSet("tre.last",S.id);renderSession();toTop();toast("Training Day "+tpl().dayName+" created");return}
  if(b.dataset.td){S.trainingDay=S.trainingDay===b.dataset.td?"":b.dataset.td;dirty();refreshTD();return}
- if(b.dataset.act==="toexport"){await saveNow();sec="resumen";renderSession();const c=$("#exportCard");if(c)c.scrollIntoView({block:"start"});return}
+ if(b.dataset.act==="toexport"){await saveNow();sec=tpl().max?"cierre":"resumen";renderSession();const c=$("#exportCard");if(c)c.scrollIntoView({block:"start"});return}
  if(b.dataset.new){S=newSession(b.dataset.new);P=[];sec="datos";await saveNow();lsSet("tre.last",S.id);render();toTop();return}
  if(b.dataset.open){await openSession(b.dataset.open);return}
  if(b.dataset.askdel){const w=app.querySelector(`[data-delwrap="${CSS.escape(b.dataset.askdel)}"]`);w.innerHTML=`<span class="foot" style="gap:6px"><span class="muted" style="font-size:13px">Delete session and photos?</span><button class="btn small danger" data-del="${h(b.dataset.askdel)}">Delete</button><button class="btn small" data-act="home">Keep</button></span>`;return}
@@ -963,7 +1020,7 @@ app.addEventListener("click",async e=>{
  const segEl=b.closest("[data-seg]");
  if(segEl&&b.dataset.val!==undefined){const path=segEl.dataset.seg;const cur=getP(S,path);const v=cur===b.dataset.val?"":b.dataset.val;setP(S,path,v);
   segEl.querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed",x.dataset.val===v));dirty();
-  if(path==="crew"){S.body=v==="CPT body"?"cpt":v==="FO body"?"fo":"";if(!v)S.crew="CPT / FO"} // crew choice sets who is body
+  if(path==="crew"){S.body=v==="CPT body"?"cpt":v==="FO body"?"fo":"";if(!v)S.crew="CPT / FO";maxRoles(S)} // crew choice sets who is body
   if(path==="crew"||path==="fstdType"||path==="body"||path==="cuKind")renderSession();
   if(/^sum\.weakest2?\./.test(path))refreshTD();
   if(/\.result$/.test(path)){const card=segEl.closest(".ex");if(card){const id=card.id.slice(3);card.classList.toggle("has-fail",!!hasFail(id));card.classList.toggle("has-notes",!hasFail(id)&&!!filled(id));updateNavCounts()}}
@@ -1045,7 +1102,7 @@ async function giveFile(filename,blob){
  const dl=await getDownloads();
  if(dl){try{await dl.save({filename,data:blob});return "saved"}catch(e){if(e&&e.code==="declined")return "declined";if(e&&e.code==="rate_limited")return "busy"}}
  if(!window.claude){
-  try{const f=new File([blob],filename,{type:blob.type});if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f],title:"Session notes for Claude: competency analysis per pilot and general comment"});return "saved"}}catch(e){if(e&&e.name==="AbortError")return "declined"}
+  try{const f=new File([blob],filename,{type:blob.type});if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f],title:"Session notes"});return "saved"}}catch(e){if(e&&e.name==="AbortError")return "declined"}
   const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=filename;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},2000);return "saved";
  }
  return "unavailable";
@@ -1065,9 +1122,9 @@ async function exportPDF(btn){
   await saveNow();
   const blob=await buildPDF();
   const r=await giveFile(fileBase()+".pdf",blob);
-  msg.innerHTML=r==="saved"?`<div class="banner" style="background:var(--pf-soft)">PDF ready (${Math.round(blob.size/1024)} KB). Attach it in the chat for the analysis.</div>`:r==="declined"?`<div class="banner">Saving was cancelled. Generate it again whenever you like.</div>`:r==="busy"?`<div class="banner">A save window is already open. Close it and try again.</div>`:`<div class="banner bad">This view cannot save files. Open the notebook from the Claude app, claude.ai or its own web address.</div>`;
+  msg.innerHTML=r==="saved"?`<div class="banner" style="background:var(--pf-soft)">PDF ready (${Math.round(blob.size/1024)} KB).</div>`:r==="declined"?`<div class="banner">Saving was cancelled. Generate it again whenever you like.</div>`:r==="busy"?`<div class="banner">A save window is already open. Close it and try again.</div>`:`<div class="banner bad">This view cannot save files. Open the notebook from the Claude app, claude.ai or its own web address.</div>`;
  }catch(e){console.error(e);msg.innerHTML=`<div class="banner bad">Could not generate the PDF: ${h(e.message||e)}</div>`}
- btn.disabled=false;btn.textContent="Export to Claude";
+ btn.disabled=false;btn.textContent="Export to PDF";
 }
 
 async function buildPDF(){
@@ -1088,7 +1145,7 @@ async function buildPDF(){
  doc.setFont("helvetica","normal");doc.setFontSize(9);doc.setTextColor(...mut);doc.text(pt(`${fmtDate(S.date)}  |  ${S.fstdType||"FSTD type ?"}  |  ${S.fstdCode||"FSTD code ?"}${t.timing?"  |  "+t.timing:""}`),M,y+12);
  y+=18;
 
- doc.autoTable({...base,startY:y,body:[["SESSION",t.session],["DATE",fmtDate(S.date)],["FSTD & CODE",S.fstdCode],["FSTD TYPE",S.fstdType],...(t.crew?[["CREW",S.crew]]:[]),["EXAMINER / EFOS",S.examiner]].map(r=>r.map(pt)),columnStyles:{0:{fontStyle:"bold",cellWidth:40,fillColor:soft}}});after();
+ doc.autoTable({...base,startY:y,body:[["SESSION",t.session],["DATE",fmtDate(S.date)],["FSTD & CODE",S.fstdCode],["FSTD TYPE",S.fstdType],...(t.crew||t.max?[["CREW",S.crew]]:[]),["EXAMINER / EFOS",S.examiner]].map(r=>r.map(pt)),columnStyles:{0:{fontStyle:"bold",cellWidth:40,fillColor:soft}}});after();
 
  const prow=pilotRows(inclPass);
  doc.autoTable({...base,startY:y,head:[["",pt(pilotLabel("cpt")),pt(pilotLabel("fo"))]],body:prow.map(([l,f])=>[l,pt(f("cpt")),pt(f("fo"))]),columnStyles:{0:{fontStyle:"bold",cellWidth:40,fillColor:soft}}});after();
@@ -1112,16 +1169,16 @@ async function buildPDF(){
   if(s.repeats){doc.autoTable({...base,startY:y,body:[["REPEATS\n"+pt(t.repeatsNote),pt(S.repeats||"")]],columnStyles:{0:{cellWidth:46,fontStyle:"bold"}}});after()}
  }
 
- if(t.summary==="CUFFS")heading("Summary & comments","  S = Satisfactory | D = Deferred | R = Repeat");else for(const part of parts(t)){heading(parts(t).length>1?part.title:"Summary & closing","  Grades 1-5 (FEG 5.11)");
+ if(t.summary==="CUFFS")heading("Summary & comments","  S = Satisfactory | D = Deferred | R = Repeat");else if(t.summary==="MAX")heading("Summary","  Differences training");else for(const part of parts(t)){heading(parts(t).length>1?part.title:"Summary & closing","  Grades 1-5 (FEG 5.11)");
  doc.autoTable({...base,startY:y,head:[["COMPETENCY",pt(pilotLabel("cpt")),"KEY OBSERVATIONS - "+pt(pilotLabel("cpt")),pt(pilotLabel("fo")),"KEY OBSERVATIONS - "+pt(pilotLabel("fo"))]],body:(TG={cpt:tagged("cpt",part.secs),fo:tagged("fo",part.secs)},COMPS.map(([c,n])=>[`${c} - ${n}`,GRADE_WORD[S[part.gk][c].cpt]||"",pt(obsText(c,"cpt",part.gk)),GRADE_WORD[S[part.gk][c].fo]||"",pt(obsText(c,"fo",part.gk))])),columnStyles:{0:{cellWidth:34,fontStyle:"bold"},1:{cellWidth:18,halign:"center",fontStyle:"bold"},3:{cellWidth:18,halign:"center",fontStyle:"bold"}}});after();}
  const sm=S.sum;const wk=k=>S.body===k?"Body":(sm.weakest[k]||"")+(S.body&&sm.weakest2&&sm.weakest2[k]?"  (2nd: "+sm.weakest2[k]+")":"");
  const yn=(o,k)=>S.body===k?"Body":(o[k]||"");
  const lst=(k,v)=>sdrList(k,v).map(x=>x.code+" "+x.name).join("\n");
- const srows=t.summary==="CUFFS"?[["S / D / R",sdrCount("cpt"),sdrCount("fo")],["DEFERRED",lst("cpt","D"),lst("fo","D")],["REPEAT",lst("cpt","R"),lst("fo","R")],...(t.base?[["RESTRICTED BASE",sm.base.cpt||"",sm.base.fo||""]]:[]),["COMMENTS",S.notes.cpt||"",S.notes.fo||""],["LICENCE",S.pilots.cpt.licType||"",S.pilots.fo.licType||""]]:t.summary==="CULOFT"?[["RECOMMENDED FOR CU CHECK",yn(sm.rec,"cpt"),yn(sm.rec,"fo")],["LICENCE",S.pilots.cpt.licType||"",S.pilots.fo.licType||""]]:t.summary==="TRN"?[["WEAKEST COMPETENCY (LPC)",wk("cpt"),wk("fo")],["IMPROVEMENT OBSERVED",yn(sm.improve,"cpt"),yn(sm.improve,"fo")],["TRE INDICATORS REVIEWED",yn(sm.indRev,"cpt"),yn(sm.indRev,"fo")]]:t.summary==="LPC"?[["WEAKEST COMPETENCY",wk("cpt"),wk("fo")],["TRAINING DAY (A-G)",{content:S.trainingDay||"",colSpan:2}],["OUTCOME",S.body==="cpt"?"Body":sm.outcome.cpt,S.body==="fo"?"Body":sm.outcome.fo]]:[["OPC OUTCOME",sm.outcome.cpt,sm.outcome.fo],["WEAKEST COMPETENCY",sm.weakest.cpt,sm.weakest.fo],["FAILED ITEMS",sm.failed.cpt,sm.failed.fo]];
+ const srows=t.summary==="MAX"?[["eLEARNING CERTIFICATE",S.pilots.cpt.elearn||"",S.pilots.fo.elearn||""],["T/O & LANDINGS (FCL.060)",S.pilots.cpt.toldg||"",S.pilots.fo.toldg||""]]:t.summary==="CUFFS"?[["S / D / R",sdrCount("cpt"),sdrCount("fo")],["DEFERRED",lst("cpt","D"),lst("fo","D")],["REPEAT",lst("cpt","R"),lst("fo","R")],...(t.base?[["RESTRICTED BASE",sm.base.cpt||"",sm.base.fo||""]]:[]),["COMMENTS",S.notes.cpt||"",S.notes.fo||""],["LICENCE",S.pilots.cpt.licType||"",S.pilots.fo.licType||""]]:t.summary==="CULOFT"?[["RECOMMENDED FOR CU CHECK",yn(sm.rec,"cpt"),yn(sm.rec,"fo")],["LICENCE",S.pilots.cpt.licType||"",S.pilots.fo.licType||""]]:t.summary==="TRN"?[["WEAKEST COMPETENCY (LPC)",wk("cpt"),wk("fo")],["IMPROVEMENT OBSERVED",yn(sm.improve,"cpt"),yn(sm.improve,"fo")],["TRE INDICATORS REVIEWED",yn(sm.indRev,"cpt"),yn(sm.indRev,"fo")]]:t.summary==="LPC"?[["WEAKEST COMPETENCY",wk("cpt"),wk("fo")],["TRAINING DAY (A-G)",{content:S.trainingDay||"",colSpan:2}],["OUTCOME",S.body==="cpt"?"Body":sm.outcome.cpt,S.body==="fo"?"Body":sm.outcome.fo]]:[["OPC OUTCOME",sm.outcome.cpt,sm.outcome.fo],["WEAKEST COMPETENCY",sm.weakest.cpt,sm.weakest.fo],["FAILED ITEMS",sm.failed.cpt,sm.failed.fo]];
  doc.autoTable({...base,startY:y,head:[["",pt(pilotLabel("cpt")),pt(pilotLabel("fo"))]],body:srows.filter(r=>!(t.noTD&&r[0]==="TRAINING DAY (A-G)")).map(r=>r.map(x=>typeof x==="object"&&x?{...x,content:pt(x.content)}:pt(x||""))),columnStyles:{0:{cellWidth:46,fontStyle:"bold",fillColor:soft}}});after();
  if(t.summary==="TRN"){doc.autoTable({...base,startY:y,head:[["DEBRIEF - What went well and why?","DEBRIEF - What would they do differently and why?"]],body:[[pt(S.debrief.well||""),pt(S.debrief.diff||"")]],bodyStyles:{minCellHeight:16}});after()}
  if((t.admin||[]).length)doc.autoTable({...base,startY:y,head:[[{content:"ADMIN CHECKLIST",colSpan:2}]],body:t.admin.map((a,i)=>[S.admin["a"+i]?"[X]":"[  ]",pt(a)]),columnStyles:{0:{cellWidth:12,halign:"center",fontStyle:"bold"}}});after();
- if(t.summary!=="CUFFS"&&((S.notes.cpt||"").trim()||(S.notes.fo||"").trim())){doc.autoTable({...base,startY:y,head:[["GENERAL NOTES - "+pt(cptH),"GENERAL NOTES - "+pt(foH)]],body:[[pt(S.notes.cpt||""),pt(S.notes.fo||"")]]});after()}
+ if(t.summary!=="CUFFS"&&t.summary!=="MAX"&&((S.notes.cpt||"").trim()||(S.notes.fo||"").trim())){doc.autoTable({...base,startY:y,head:[["GENERAL NOTES - "+pt(cptH),"GENERAL NOTES - "+pt(foH)]],body:[[pt(S.notes.cpt||""),pt(S.notes.fo||"")]]});after()}
  if((S.notes.general||"").trim()){doc.autoTable({...base,startY:y,head:[["GENERAL NOTES (earlier version)"]],body:[[pt(S.notes.general)]]});after()}
 
  // Evidence annex
@@ -1184,6 +1241,7 @@ function expiryAlerts(){const out=[];["cpt","fo"].forEach(k=>[["trir","TR/IR val
 function expSpan(k,f){const a=expiry(S.pilots[k][f]);return `<span class="exp ${a&&a.bad?"bad":""}" data-exp="${k}.${f}">${a?"⚠ "+h(a.text[0].toUpperCase()+a.text.slice(1)):""}</span>`}
 function refreshExp(){app.querySelectorAll("[data-exp]").forEach(el=>{const [k,f]=el.dataset.exp.split(".");const a=expiry(S.pilots[k][f]);el.textContent=a?"⚠ "+a.text[0].toUpperCase()+a.text.slice(1):"";el.classList.toggle("bad",!!(a&&a.bad))})}
 function pilotRows(inclPass){
+ if(tpl().max){const p=k=>S.pilots[k];return [["NAME",k=>p(k).name],["CREWCODE",k=>p(k).crewcode],["eLEARNING CERTIFICATE",k=>p(k).elearn],["T/O & LANDINGS (FCL.060)",k=>p(k).toldg]]}
  if(isTRN()){const p=k=>S.pilots[k];return [["NAME",k=>p(k).name],["CREWCODE",k=>p(k).crewcode],["LPC OUTCOME",k=>p(k).outcome],["LPC FAILED ITEMS",k=>p(k).failed],["WEAKEST COMPETENCY (LPC)",k=>S.body===k?"Body":S.sum.weakest[k]],["TRE BEHAVIOURAL INDICATORS",k=>p(k).indicators],["TRAINING SCENARIO (EFOS)",k=>tpl().dayName]]}
  const p=k=>S.pilots[k];const u=v=>v?"  |  UPDT: "+v:"";const x=(k,f)=>{const a=expiry(S.pilots[k][f]);return a?"  |  (!) "+a.text.toUpperCase():""};
  return [["NAME",k=>p(k).name],["CREWCODE",k=>p(k).crewcode],["LICENCE No / TYPE",k=>[p(k).license,p(k).licType].filter(Boolean).join(" ")],
@@ -1194,16 +1252,16 @@ function pilotRows(inclPass){
 /* ---------------- Plain text ---------------- */
 function sessionText(){
  const t=tpl();const L=[];const ev=evidenceList();const evBy={};ev.forEach(p=>{(evBy[p.exId]=evBy[p.exId]||[]).push(p.label)});
- L.push(`${t.session} - Session notes`,`Date: ${fmtDate(S.date)} | FSTD: ${S.fstdCode||"?"} | Type: ${S.fstdType||"?"}${t.crew?" | Crew: "+S.crew:""} | Examiner: ${S.examiner||""}`,"");
+ L.push(`${t.session} - Session notes`,`Date: ${fmtDate(S.date)} | FSTD: ${S.fstdCode||"?"} | Type: ${S.fstdType||"?"}${t.crew||t.max?" | Crew: "+S.crew:""} | Examiner: ${S.examiner||""}`,"");
  ["cpt","fo"].forEach(k=>{L.push(`${pilotLabel(k)}: `+pilotRows(false).map(([l,f])=>`${l}: ${f(k)||"-"}`).join(" | "))});
  for(const s of t.sections){L.push("",`== ${s.title} (${s.sub}) ==`);
   if(s.loft){const sc=loftScenario(s.loft);L.push(sc?`LOFT ${sc.n} - ${sc.title} (${sc.route})`:"LOFT scenario not selected")}
   for(const it of s.items){(it.pre||[]).forEach(x=>L.push(`  [${x}]`));if(it.done){L.push(`- ${it.code} ${it.name}: ${it.note||"Completed in the LOFT"}`);continue}const e=S.ex[it.id];L.push(`- ${it.code?it.code+" ":""}${it.name}${it.itemName?" ("+it.itemName+")":""}${it.pf?" | PF: "+it.pf:""}${it.cond?" | "+it.cond:""}${it.refs.length?" | "+it.refs.join(" "):""}${evBy[it.id]?" | Evidence: "+evBy[it.id].join(", "):""}`);
    ["cpt","fo"].forEach(k=>{const x=e[k];L.push(`   ${pilotLabel(k)} [${x.role||"-"}${x.result?" "+x.result:""}]${x.comp?" COMP: "+x.comp:""}: ${(x.notes||"").trim().replace(/\n+/g," / ")||"-"}`)})}
   if(s.repeats)L.push(`- REPEATS: ${S.repeats||"-"}`)}
- if(t.summary!=="CUFFS")for(const part of parts(t)){L.push("",`== ${part.title} ==`);TG={cpt:tagged("cpt",part.secs),fo:tagged("fo",part.secs)};COMPS.forEach(([c])=>{const g=S[part.gk][c];const oc=obsText(c,"cpt",part.gk).replace(/\n/g," / "),of=obsText(c,"fo",part.gk).replace(/\n/g," / ");if(g.cpt||g.fo||oc||of)L.push(`${c}: ${pilotLabel("cpt")} ${GRADE_WORD[g.cpt]||"-"}${oc?" ("+oc+")":""} | ${pilotLabel("fo")} ${GRADE_WORD[g.fo]||"-"}${of?" ("+of+")":""}`)});}
- const sm=S.sum;L.push(`Weakest: ${sm.weakest.cpt||"-"} / ${sm.weakest.fo||"-"}`,`Outcome: ${sm.outcome.cpt||"-"} / ${sm.outcome.fo||"-"}`);
- if(t.summary==="CUFFS")["cpt","fo"].forEach(k=>L.push(`${pilotLabel(k)}: ${sdrCount(k)} | Deferred: ${sdrList(k,"D").map(x=>x.code).join(", ")||"-"} | Repeat: ${sdrList(k,"R").map(x=>x.code).join(", ")||"-"}${t.base?" | Restricted base: "+(S.sum.base[k]||"-"):""} | Comments: ${S.notes[k]||"-"}`));else if(t.summary==="CULOFT")L.push(`Recommended for CU check: ${S.sum.rec.cpt||"-"} / ${S.sum.rec.fo||"-"}`);else if(t.summary==="TRN")L.push(`Improvement observed: ${sm.improve.cpt||"-"} / ${sm.improve.fo||"-"}`,`TRE indicators reviewed: ${sm.indRev.cpt||"-"} / ${sm.indRev.fo||"-"}`,`Debrief - went well: ${S.debrief.well||"-"}`,`Debrief - differently: ${S.debrief.diff||"-"}`);else if(t.summary==="LPC")L.push(`Training day: ${S.trainingDay||"-"}`);else L.push(`Failed items: ${sm.failed.cpt||"-"} / ${sm.failed.fo||"-"}`);
+ if(t.summary!=="CUFFS"&&t.summary!=="MAX")for(const part of parts(t)){L.push("",`== ${part.title} ==`);TG={cpt:tagged("cpt",part.secs),fo:tagged("fo",part.secs)};COMPS.forEach(([c])=>{const g=S[part.gk][c];const oc=obsText(c,"cpt",part.gk).replace(/\n/g," / "),of=obsText(c,"fo",part.gk).replace(/\n/g," / ");if(g.cpt||g.fo||oc||of)L.push(`${c}: ${pilotLabel("cpt")} ${GRADE_WORD[g.cpt]||"-"}${oc?" ("+oc+")":""} | ${pilotLabel("fo")} ${GRADE_WORD[g.fo]||"-"}${of?" ("+of+")":""}`)});}
+ const sm=S.sum;if(!t.max)L.push(`Weakest: ${sm.weakest.cpt||"-"} / ${sm.weakest.fo||"-"}`,`Outcome: ${sm.outcome.cpt||"-"} / ${sm.outcome.fo||"-"}`);
+ if(t.summary==="MAX")["cpt","fo"].forEach(k=>L.push(`${pilotLabel(k)}: eLearning ${S.pilots[k].elearn||"-"} | T/O & LDG ${S.pilots[k].toldg||"-"}/3`));else if(t.summary==="CUFFS")["cpt","fo"].forEach(k=>L.push(`${pilotLabel(k)}: ${sdrCount(k)} | Deferred: ${sdrList(k,"D").map(x=>x.code).join(", ")||"-"} | Repeat: ${sdrList(k,"R").map(x=>x.code).join(", ")||"-"}${t.base?" | Restricted base: "+(S.sum.base[k]||"-"):""} | Comments: ${S.notes[k]||"-"}`));else if(t.summary==="CULOFT")L.push(`Recommended for CU check: ${S.sum.rec.cpt||"-"} / ${S.sum.rec.fo||"-"}`);else if(t.summary==="TRN")L.push(`Improvement observed: ${sm.improve.cpt||"-"} / ${sm.improve.fo||"-"}`,`TRE indicators reviewed: ${sm.indRev.cpt||"-"} / ${sm.indRev.fo||"-"}`,`Debrief - went well: ${S.debrief.well||"-"}`,`Debrief - differently: ${S.debrief.diff||"-"}`);else if(t.summary==="LPC")L.push(`Training day: ${S.trainingDay||"-"}`);else L.push(`Failed items: ${sm.failed.cpt||"-"} / ${sm.failed.fo||"-"}`);
  if((S.notes.cpt||"").trim()||(S.notes.fo||"").trim())L.push("","== General notes ==",`${pilotLabel("cpt")}: ${S.notes.cpt||"-"}`,`${pilotLabel("fo")}: ${S.notes.fo||"-"}`);if((S.notes.general||"").trim())L.push(`Earlier general notes: ${S.notes.general}`);
  return L.join("\n");
 }
