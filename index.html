@@ -212,6 +212,7 @@ table.timing td,table.timing th{padding:5px 8px;border-bottom:1px solid var(--li
 .srow .open{flex:1;min-width:0;text-align:left;background:none;border:0;padding:0;display:flex;flex-direction:column;gap:2px}
 .badge{display:inline-block;font-family:var(--f-mono);font-size:11px;padding:2px 6px;border-radius:4px;background:var(--accent-soft);color:var(--accent);margin-right:6px}
 .srow .names{font-size:13px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sfilter{display:flex;flex-direction:column;gap:8px}.sfilter input{width:100%;height:44px;border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:9px 12px;font-size:16px}
 .empty{border:1px dashed var(--line);border-radius:var(--r);padding:22px;color:var(--muted);text-align:center}
 .foot{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
 
@@ -863,7 +864,8 @@ function firstName(k){return pilotName(k).split(/\s+/)[0]||""}
 async function renderHome(){
  sessions=(await DB.all("sessions")).sort((a,b)=>b.updatedAt-a.updatedAt);
  const rows=sessions.map(s=>{const t=T[s.type];const n=[s.pilots.cpt.name&&"CPT "+s.pilots.cpt.name,s.pilots.fo.name&&(s.crew==="CPT / CPT"?"CPT ":"FO ")+s.pilots.fo.name].filter(Boolean).join(" · ")||"Pilots not named yet";
-  return `<div class="srow"><button class="open" data-open="${h(s.id)}"><span><span class="badge">${h(t.short)}</span><b>${h(fmtDate(s.date))}</b>${s.fstdCode?` <span class="muted">· ${h(s.fstdCode)}</span>`:""}${s.fstdType?` <span class="muted">· ${h(s.fstdType)}</span>`:""}</span><span class="names">${h(n)}</span></button><span data-delwrap="${h(s.id)}"><button class="btn small ghost" data-askdel="${h(s.id)}">Delete</button></span></div>`}).join("");
+  const hay=[t.short,t.name,fmtDate(s.date),s.date,s.fstdCode,s.fstdType,s.examiner,...["cpt","fo"].flatMap(k=>[s.pilots[k].name,s.pilots[k].crewcode])].filter(Boolean).join(" ").toLowerCase();
+  return `<div class="srow" data-fam="${h(famOf(s.type))}" data-hay="${h(hay)}"><button class="open" data-open="${h(s.id)}"><span><span class="badge">${h(t.short)}</span><b>${h(fmtDate(s.date))}</b>${s.fstdCode?` <span class="muted">· ${h(s.fstdCode)}</span>`:""}${s.fstdType?` <span class="muted">· ${h(s.fstdType)}</span>`:""}</span><span class="names">${h(n)}</span></button><span data-delwrap="${h(s.id)}"><button class="btn small ghost" data-askdel="${h(s.id)}">Delete</button></span></div>`}).join("");
  app.innerHTML=`
  <header class="top"><div class="wrap top-row" style="max-width:900px;margin:0 auto"><div class="top-title"><h1>TRE Sim Notebook</h1><div class="sub">B737 · RST 3 and RST 4 templates</div></div></div></header>
  <div class="scroller"><div class="wrap"><div class="home">
@@ -881,6 +883,9 @@ async function renderHome(){
    <button class="newbtn" data-new="MAX" style="grid-column:1/-1"><span class="plus">+ B737-8200</span><span class="t">MAX Differences</span><span class="d">Familiarisation, stall &amp; MCAS, runaway stabiliser, cross FCC trim monitor, airspeed unreliable, engine failure with cabin smoke · CPT/FO, CPT/CPT or FO/FO</span></button>
   </div>
   <section class="hero" style="margin-top:6px"><span class="lbl">Sessions saved on this device</span></section>
+  ${sessions.length>1?`<div class="sfilter"><input type="search" id="homeSearch" placeholder="Search name, crewcode, date, FSTD…" value="${h(homeQ)}" autocomplete="off" aria-label="Search sessions">
+   <div class="seg fam">${["All",...[...new Set(sessions.map(x=>famOf(x.type)))].sort((a,b)=>FAMS.indexOf(a)-FAMS.indexOf(b))].map(f=>`<button type="button" data-fam="${h(f)}" aria-pressed="${homeF===f}">${h(f)}</button>`).join("")}</div>
+   <span class="muted" id="homeCount" style="font-size:13px"></span></div>`:""}
   <div class="slist">${rows||`<div class="empty">No sessions yet. Start an LPC, OPC or Training Day above; it saves automatically as you type.</div>`}</div>
   <div class="card" style="display:flex;flex-direction:column;gap:10px">
    <h3>Backup</h3>
@@ -888,7 +893,15 @@ async function renderHome(){
    <div class="foot"><button class="btn" data-act="backup" ${sessions.length?"":"disabled"}>Save backup (.json)</button><button class="btn" data-act="import">Import backup</button></div>
   </div>
  </div></div></div>`;
+ applyHomeFilter();
 }
+/* Session search on the home screen */
+const FAMS=["All","LPC","OPC","Training Day","CU","RTC","MAX"];let homeQ="",homeF="All";
+function famOf(type){return /^LPC/.test(type)?"LPC":type==="OPC"?"OPC":/^TRN_/.test(type)?"Training Day":/^CU/.test(type)?"CU":type==="DEFO"?"RTC":type==="MAX"?"MAX":"Other"}
+function applyHomeFilter(){const rows=[...app.querySelectorAll(".slist .srow")];if(!rows.length)return;const words=homeQ.toLowerCase().split(/\s+/).filter(Boolean);let n=0;
+ rows.forEach(r=>{const ok=(homeF==="All"||r.dataset.fam===homeF)&&words.every(w=>r.dataset.hay.includes(w));r.hidden=!ok;if(ok)n++});
+ const c=app.querySelector("#homeCount");if(c)c.textContent=n===rows.length?`${n} sessions`:`${n} of ${rows.length} sessions`;
+ let e=app.querySelector(".slist .nomatch");if(!n&&!e){e=document.createElement("div");e.className="empty nomatch";e.textContent="No sessions match the search.";app.querySelector(".slist").append(e)}else if(n&&e)e.remove()}
 function fmtDate(d){if(!d)return "No date";const [y,m,dd]=d.split("-");return `${dd}/${m}/${y}`}
 
 function navSections(){
@@ -1121,6 +1134,7 @@ function exportCard(){
 
 /* ---------------- Events ---------------- */
 app.addEventListener("input",e=>{
+ if(e.target.id==="homeSearch"){homeQ=e.target.value;applyHomeFilter();return}
  const el=e.target;
  if(el.dataset.k){setP(S,el.dataset.k,el.value);dirty();if(/^loft\./.test(el.dataset.k)){renderSession();return}
   if(el.tagName==="TEXTAREA")autosize(el);
@@ -1164,6 +1178,7 @@ app.addEventListener("click",async e=>{
  if(b.dataset.act==="toexport"){await saveNow();sec=tpl().max?"cierre":"resumen";renderSession();const c=$("#exportCard");if(c)c.scrollIntoView({block:"start"});return}
  if(b.dataset.new){S=newSession(b.dataset.new);P=[];sec="datos";await saveNow();lsSet("tre.last",S.id);render();toTop();return}
  if(b.dataset.open){await openSession(b.dataset.open);return}
+ if(b.dataset.fam&&b.closest(".sfilter")){homeF=b.dataset.fam;b.parentNode.querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed",String(x===b)));applyHomeFilter();return}
  if(b.dataset.askdel){const w=app.querySelector(`[data-delwrap="${CSS.escape(b.dataset.askdel)}"]`);w.innerHTML=`<span class="foot" style="gap:6px"><span class="muted" style="font-size:13px">Delete session and photos?</span><button class="btn small danger" data-del="${h(b.dataset.askdel)}">Delete</button><button class="btn small" data-act="home">Keep</button></span>`;return}
  if(b.dataset.del){await deleteSession(b.dataset.del);return}
  if(b.dataset.sec){sec=b.dataset.sec;await saveNow();renderSession();toTop();return}
